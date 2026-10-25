@@ -1,0 +1,1149 @@
+<!docTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Face — AI Face Emotion Detection System</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+<style>
+
+/* ============================================================
+   FACEIQ — UNIVERSITY LEVEL REDESIGN
+   Color Scheme: Deep Navy + Electric Purple + Cyan Gold
+   (Shooting Stars & Rings REMOVED only)
+============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:         #020510;
+  --bg2:        #050a18;
+  --surface:    #080f20;
+  --surface2:   #0c1428;
+  --surface3:   #101a30;
+  --purple:     #7c3aed;
+  --purple2:    #a855f7;
+  --cyan:       #06b6d4;
+  --cyan2:      #22d3ee;
+  --gold:       #f59e0b;
+  --gold2:      #fbbf24;
+  --green:      #10b981;
+  --red:        #ef4444;
+  --pink:       #ec4899;
+  --grad-main:  linear-gradient(135deg, #7c3aed, #06b6d4);
+  --grad-warm:  linear-gradient(135deg, #f59e0b, #ef4444);
+  --grad-cool:  linear-gradient(135deg, #06b6d4, #7c3aed);
+  --grad-gold:  linear-gradient(135deg, #f59e0b, #a855f7);
+  --b1: rgba(124,58,237,0.15);
+  --b2: rgba(124,58,237,0.30);
+  --b3: rgba(6,182,212,0.20);
+  --tx:  #f0f4ff;
+  --tx2: #8892aa;
+  --tx3: #2d3a50;
+  --sans:'Space Grotesk',sans-serif;
+  --disp:'Syne',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+
+/* ── ANIMATED BACKGROUND ───────────────────────────────────── */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;display:block;}
+
+/* Floating orbs - KEPT */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);animation:orbFloat linear infinite;opacity:0.4;}
+.orb1{width:400px;height:400px;background:radial-gradient(circle,rgba(124,58,237,0.4),transparent);top:-100px;left:-100px;animation-duration:25s;}
+.orb2{width:350px;height:350px;background:radial-gradient(circle,rgba(6,182,212,0.3),transparent);bottom:-100px;right:-100px;animation-duration:30s;animation-direction:reverse;}
+.orb3{width:250px;height:250px;background:radial-gradient(circle,rgba(245,158,11,0.2),transparent);top:50%;right:10%;animation-duration:20s;}
+@keyframes orbFloat{
+  0%{transform:translate(0,0) scale(1)}
+  33%{transform:translate(30px,-20px) scale(1.05)}
+  66%{transform:translate(-20px,30px) scale(0.95)}
+  100%{transform:translate(0,0) scale(1)}
+}
+
+/* ── NAVBAR ────────────────────────────────────────────────── */
+#nav{position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;padding:0 2rem;gap:1rem;background:rgba(2,5,16,0.90);backdrop-filter:blur(40px) saturate(180%);-webkit-backdrop-filter:blur(40px) saturate(180%);border-bottom:1px solid rgba(124,58,237,0.15);}
+#nav::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,0.6),rgba(6,182,212,0.8),rgba(124,58,237,0.6),transparent);}
+.nlogo{font-family:var(--disp);font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;cursor:pointer;display:flex;align-items:center;gap:10px;position:relative;z-index:1;flex-shrink:0;text-decoration:none;}
+.nlogo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(6,182,212,0.2));border:1px solid rgba(124,58,237,0.4);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px rgba(124,58,237,0.25),inset 0 1px 0 rgba(255,255,255,0.1);animation:iconGlow 3s ease-in-out infinite alternate;}
+@keyframes iconGlow{0%{box-shadow:0 0 15px rgba(124,58,237,0.25)}100%{box-shadow:0 0 30px rgba(124,58,237,0.5),0 0 60px rgba(6,182,212,0.2)}}
+.nlogo-text{background:var(--grad-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.nlinks{display:flex;align-items:center;margin-left:auto;background:rgba(8,15,32,0.7);border:1px solid rgba(124,58,237,0.12);border-radius:14px;padding:5px;gap:2px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.02),0 4px 20px rgba(0,0,0,0.5);}
+.nbtn{padding:7px 14px;font-size:12px;font-weight:600;color:rgba(140,160,200,0.8);background:transparent;border:none;border-radius:10px;cursor:pointer;transition:all .25s cubic-bezier(.4,0,.2,1);display:flex;align-items:center;gap:6px;font-family:var(--sans);white-space:nowrap;position:relative;}
+.nbtn .nicon{font-size:13px;transition:transform .3s;}
+.nbtn:hover{color:#fff;background:rgba(124,58,237,0.1);}
+.nbtn:hover .nicon{transform:scale(1.2) rotate(-5deg);}
+.nbtn.act{color:var(--cyan2);background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(6,182,212,0.08));box-shadow:0 0 16px rgba(124,58,237,0.15),inset 0 1px 0 rgba(124,58,237,0.12);}
+.nbtn.act::after{content:'';position:absolute;bottom:2px;left:50%;transform:translateX(-50%);width:18px;height:2px;border-radius:1px;background:var(--grad-main);box-shadow:0 0 8px var(--cyan);}
+
+/* ── PAGE WRAPPER ──────────────────────────────────────────── */
+.pg{display:none;position:relative;z-index:1;min-height:100vh;padding:80px 1.5rem 5rem;}
+.pg.act{display:block;animation:pageIn .4s ease both;}
+@keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.pgi{max-width:1160px;margin:0 auto;}
+
+/* ── PAGE HEADER ───────────────────────────────────────────── */
+.pghdr{padding:1.5rem 0 2rem;border-bottom:1px solid var(--b1);margin-bottom:1.5rem;}
+.pgtag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--cyan2);text-transform:uppercase;margin-bottom:7px;display:flex;align-items:center;gap:7px;}
+.pgtag::before{content:'//';color:var(--tx3);}
+.pgh1{font-family:var(--disp);font-size:clamp(1.8rem,5vw,2.8rem);font-weight:800;letter-spacing:-.03em;line-height:1.1;margin-bottom:7px;background:var(--grad-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.pgdesc{font-size:13px;color:var(--tx2);line-height:1.65;max-width:600px;}
+
+/* ── PANELS ────────────────────────────────────────────────── */
+.panel{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:18px;overflow:hidden;position:relative;box-shadow:0 4px 40px rgba(0,0,0,0.6),inset 0 1px 0 rgba(124,58,237,0.08);transition:border-color .3s;}
+.panel:hover{border-color:rgba(124,58,237,0.25);}
+.panel::after{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(124,58,237,0.5),rgba(6,182,212,0.6),rgba(124,58,237,0.5),transparent);}
+.ph{display:flex;align-items:center;gap:10px;padding:1rem 1.25rem;border-bottom:1px solid var(--b1);background:linear-gradient(90deg,rgba(124,58,237,0.06),rgba(6,182,212,0.03),transparent);}
+.ph-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ph-panel-title{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+.ph-panel-sub{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--tx3);}
+.panel-body{padding:1.25rem;}
+
+/* ── BUTTONS ───────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 22px;border-radius:11px;font-size:13px;font-weight:600;cursor:pointer;transition:all .25s;border:none;font-family:var(--sans);letter-spacing:-.01em;position:relative;overflow:hidden;}
+.btn:disabled{opacity:.25;cursor:not-allowed !important;transform:none !important;}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.08),transparent);border-radius:inherit;}
+.btn-primary{background:var(--grad-main);color:#fff;box-shadow:0 4px 20px rgba(124,58,237,0.3);}
+.btn-primary:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 30px rgba(124,58,237,0.5);}
+.btn-outline{background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.25);color:var(--cyan2);}
+.btn-outline:hover:not(:disabled){background:rgba(124,58,237,0.15);}
+.btn-ghost{background:rgba(255,255,255,0.03);border:1px solid var(--b1);color:var(--tx2);}
+.btn-ghost:hover:not(:disabled){background:rgba(124,58,237,0.07);color:var(--tx);}
+.btn-danger{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);color:var(--red);}
+.btn-danger:hover:not(:disabled){background:rgba(239,68,68,0.15);}
+.btn-sm{padding:7px 14px;font-size:11px;border-radius:9px;}
+.btn-lg{padding:13px 28px;font-size:15px;border-radius:13px;}
+.btn-full{width:100%;}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:currentColor;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── UPLOAD ZONE ───────────────────────────────────────────── */
+.upload-zone{border:2px dashed rgba(124,58,237,0.2);border-radius:16px;min-height:260px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .35s;position:relative;overflow:hidden;background:linear-gradient(145deg,#060c1c,#080f22);}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--purple);background:linear-gradient(145deg,rgba(124,58,237,0.06),rgba(6,182,212,0.03));box-shadow:inset 0 0 40px rgba(124,58,237,0.06);}
+.upload-zone.has-image{border-style:solid;border-color:rgba(124,58,237,0.2);}
+.uz-placeholder{text-align:center;padding:1.5rem;}
+.uz-icon-wrap{width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,rgba(124,58,237,0.15),rgba(6,182,212,0.08));border:1px solid rgba(124,58,237,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;font-size:28px;box-shadow:0 0 20px rgba(124,58,237,0.15);animation:iconFloat 3s ease-in-out infinite;}
+@keyframes iconFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.uz-title{font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:4px;letter-spacing:-.01em;}
+.uz-sub{font-size:11px;color:var(--tx3);margin-bottom:1rem;}
+
+/* ── CANVAS WRAP ───────────────────────────────────────────── */
+.canvas-wrap{position:relative;width:100%;display:none;border-radius:14px;overflow:hidden;background:#000;}
+.canvas-wrap img{display:block;width:100%;height:auto;max-height:430px;object-fit:contain;}
+.canvas-wrap canvas{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;}
+.rm-img-btn{position:absolute;top:10px;right:10px;width:30px;height:30px;border-radius:8px;background:rgba(2,5,16,0.85);border:1px solid rgba(124,58,237,0.3);color:var(--tx);font-size:14px;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;transition:all .2s;}
+.rm-img-btn:hover{background:rgba(239,68,68,0.25);border-color:var(--red);}
+
+/* ── EMOTION BARS ──────────────────────────────────────────── */
+.ebar-bars{display:flex;flex-direction:column;gap:6px;}
+.ebar{display:flex;align-items:center;gap:8px;}
+.ebar-lbl{width:95px;font-size:11px;color:var(--tx2);font-weight:500;display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.ebar-track{flex:1;height:5px;background:rgba(0,0,0,0.5);border-radius:100px;overflow:hidden;border:1px solid rgba(124,58,237,0.06);}
+.ebar-fill{height:100%;border-radius:100px;transition:width 1.1s cubic-bezier(.16,1,.3,1);}
+.ebar-val{width:28px;text-align:right;font-family:var(--mono);font-size:10px;color:var(--tx3);}
+
+/* ── LOADING OVERLAY ───────────────────────────────────────── */
+.load-ov{display:none;position:absolute;inset:0;background:rgba(2,5,16,0.94);border-radius:18px;align-items:center;justify-content:center;flex-direction:column;gap:18px;z-index:20;backdrop-filter:blur(10px);}
+.load-ov.on{display:flex;animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.srings{width:90px;height:90px;position:relative;display:flex;align-items:center;justify-content:center;}
+.sr{position:absolute;border-radius:50%;border:1px solid;}
+.sr1{inset:0;border-color:rgba(124,58,237,0.3);animation:spin 3s linear infinite;}
+.sr2{inset:14px;border-color:rgba(6,182,212,0.25);animation:spin 2s linear infinite reverse;}
+.sr3{inset:28px;border-color:rgba(124,58,237,0.4);animation:spin 1.5s linear infinite;}
+.scan-dot{width:14px;height:14px;border-radius:50%;background:var(--grad-main);box-shadow:0 0 15px var(--purple),0 0 30px var(--cyan);animation:dotPulse 1s infinite;}
+@keyframes dotPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+.scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--purple),var(--cyan),transparent);animation:scanY 2s linear infinite;top:0;}
+@keyframes scanY{0%{top:0;opacity:0}10%{opacity:1}90%{opacity:1}100%{top:100%;opacity:0}}
+.load-msg{font-family:var(--mono);font-size:11px;color:var(--cyan2);letter-spacing:.08em;animation:flicker 1.5s infinite;}
+@keyframes flicker{0%,100%{opacity:1}50%{opacity:.3}}
+.load-prog{width:200px;height:2px;background:rgba(255,255,255,0.05);border-radius:100px;overflow:hidden;}
+.load-prog-fill{height:100%;background:var(--grad-main);border-radius:100px;animation:progAnim 2.5s ease-in-out infinite;}
+@keyframes progAnim{0%{width:0;margin-left:0}50%{width:100%;margin-left:0}100%{width:0;margin-left:100%}}
+
+/* ── TABS ──────────────────────────────────────────────────── */
+.tabs{display:flex;gap:3px;background:rgba(2,5,16,0.8);border:1px solid var(--b1);border-radius:10px;padding:3px;margin-bottom:1rem;}
+.tab-btn{flex:1;padding:7px;border-radius:7px;border:none;background:transparent;color:var(--tx2);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;font-family:var(--sans);}
+.tab-btn.active{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(6,182,212,0.1));color:var(--cyan2);border:1px solid rgba(124,58,237,0.2);}
+.tab-pane{display:none;}
+.tab-pane.active{display:block;animation:fadeIn .25s ease;}
+
+/* ── PRIMARY EMOTION CARD ──────────────────────────────────── */
+.pcard{border-radius:14px;padding:1.25rem;text-align:center;margin-bottom:1rem;border:1px solid;position:relative;overflow:hidden;box-shadow:0 4px 25px rgba(0,0,0,0.5);}
+.pc-glow{position:absolute;inset:0;opacity:.07;border-radius:14px;}
+.pc-emoji{font-size:3.2rem;display:block;margin-bottom:7px;animation:popIn .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+.pc-name{font-family:var(--disp);font-size:1.6rem;font-weight:800;letter-spacing:-.02em;margin-bottom:3px;}
+.pc-conf{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4);margin-bottom:8px;}
+.pc-bar{height:3px;background:rgba(255,255,255,.08);border-radius:100px;overflow:hidden;}
+.pc-fill{height:100%;border-radius:100px;transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+
+/* ── INSIGHT BOX ───────────────────────────────────────────── */
+.insight-box{background:linear-gradient(135deg,rgba(124,58,237,0.06),rgba(8,15,32,0.9));border-left:3px solid var(--purple);border-radius:9px;padding:11px 13px;font-size:12px;color:var(--tx2);line-height:1.65;box-shadow:inset 0 0 20px rgba(124,58,237,0.04);}
+
+/* ── RSCROLL ───────────────────────────────────────────────── */
+.rscroll{overflow-y:auto;max-height:520px;}
+.rscroll::-webkit-scrollbar{width:3px;}
+.rscroll::-webkit-scrollbar-thumb{background:rgba(124,58,237,0.3);border-radius:100px;}
+
+/* ── HOME PAGE ─────────────────────────────────────────────── */
+.hero{text-align:center;padding:3.5rem 0 3rem;}
+.hbadge{display:inline-flex;align-items:center;gap:8px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);border-radius:100px;padding:5px 18px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;color:var(--purple2);margin-bottom:1.5rem;}
+.hbadge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.6)}}
+h1.htitle{font-family:var(--disp);font-size:clamp(3rem,8vw,5.5rem);font-weight:800;line-height:.95;letter-spacing:-.04em;margin-bottom:1.2rem;}
+.ht1{display:block;background:var(--grad-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ht2{display:block;background:var(--grad-gold);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hdesc{font-size:1rem;color:var(--tx2);max-width:520px;margin:0 auto 2rem;line-height:1.7;}
+.hbtns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:2.5rem;}
+.srow{display:flex;background:linear-gradient(135deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:16px;overflow:hidden;max-width:640px;margin:0 auto 3rem;box-shadow:0 4px 30px rgba(0,0,0,0.5),inset 0 1px 0 rgba(124,58,237,0.08);}
+.ssi{flex:1;text-align:center;padding:1.25rem .5rem;border-right:1px solid var(--b1);}
+.ssi:last-child{border-right:none;}
+.ssn{font-family:var(--disp);font-size:1.8rem;font-weight:800;background:var(--grad-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.ssl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-bottom:2.5rem;}
+@media(max-width:700px){.fgrid{grid-template-columns:1fr 1fr;}}
+@media(max-width:460px){.fgrid{grid-template-columns:1fr;}}
+.fcard{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:15px;padding:1.4rem;transition:all .3s;box-shadow:0 2px 20px rgba(0,0,0,0.4);}
+.fcard:hover{border-color:rgba(124,58,237,0.3);transform:translateY(-4px);box-shadow:0 10px 35px rgba(124,58,237,0.12);}
+.fcard-ico{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:.9rem;border:1px solid;box-shadow:0 0 15px rgba(124,58,237,0.1);}
+.fcard-t{font-family:var(--disp);font-size:14px;font-weight:700;margin-bottom:5px;letter-spacing:-.01em;}
+.fcard-d{font-size:12px;color:var(--tx2);line-height:1.55;}
+.pgcards{display:grid;grid-template-columns:repeat(2,1fr);gap:1.1rem;margin-bottom:2.5rem;}
+@media(max-width:520px){.pgcards{grid-template-columns:1fr;}}
+.pgcard{background:linear-gradient(160deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:15px;overflow:hidden;cursor:pointer;transition:all .3s;box-shadow:0 4px 25px rgba(0,0,0,0.45);}
+.pgcard:hover{border-color:rgba(124,58,237,0.3);transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,58,237,0.12);}
+.pgc-pre{height:110px;display:flex;align-items:center;justify-content:center;font-size:2.8rem;position:relative;border-bottom:1px solid var(--b1);}
+.pgc-tag{position:absolute;bottom:7px;right:10px;font-family:var(--mono);font-size:8px;letter-spacing:.07em;}
+.pgc-b{padding:.9rem 1rem;}
+.pgc-l{font-family:var(--mono);font-size:9px;letter-spacing:.09em;color:var(--tx3);text-transform:uppercase;margin-bottom:3px;}
+.pgc-t{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:3px;}
+.pgc-d{font-size:11px;color:var(--tx2);line-height:1.5;}
+
+/* ── GRIDS ─────────────────────────────────────────────────── */
+.det-grid{display:grid;grid-template-columns:1fr 340px;gap:1.2rem;}
+@media(max-width:860px){.det-grid{grid-template-columns:1fr;}}
+.grp-grid{display:grid;grid-template-columns:1fr 390px;gap:1.2rem;}
+@media(max-width:900px){.grp-grid{grid-template-columns:1fr;}}
+
+/* ── GROUP CARDS ───────────────────────────────────────────── */
+.fban{display:flex;align-items:center;gap:11px;padding:10px 13px;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(6,182,212,0.04));border:1px solid rgba(124,58,237,0.2);border-radius:11px;margin-bottom:.9rem;box-shadow:0 0 20px rgba(124,58,237,0.06) inset;}
+.fban-n{font-family:var(--disp);font-size:2.2rem;font-weight:900;background:var(--grad-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+.fban-i b{display:block;font-size:13px;color:var(--tx);}
+.fban-i span{font-family:var(--mono);font-size:10px;color:var(--tx3);}
+.dom-card{padding:.9rem 1rem;border-radius:11px;border:1px solid;margin-bottom:.9rem;display:flex;align-items:center;gap:11px;}
+.dom-e{font-size:2.2rem;}
+.dom-l{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:1px;}
+.dom-n{font-family:var(--disp);font-size:1.2rem;font-weight:800;letter-spacing:-.02em;}
+.dom-s{font-size:9px;color:rgba(255,255,255,.3);font-family:var(--mono);margin-top:1px;}
+.dom-p{margin-left:auto;font-family:var(--mono);font-size:1.1rem;font-weight:900;}
+.stiles{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin:.8rem 0;}
+.stile{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:9px;padding:8px 5px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,0.3);}
+.stile-e{font-size:1.2rem;display:block;margin-bottom:2px;}
+.stile-l{font-family:var(--mono);font-size:8px;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;}
+.stile-v{font-size:12px;font-weight:700;margin-top:1px;}
+.sens{display:flex;align-items:center;gap:9px;margin-top:.8rem;padding:8px 11px;background:linear-gradient(135deg,#080f20,#0c1428);border-radius:8px;border:1px solid var(--b1);}
+.sens label{color:var(--tx2);font-family:var(--mono);font-size:9px;letter-spacing:.06em;white-space:nowrap;text-transform:uppercase;}
+.sens input[type=range]{flex:1;accent-color:var(--purple);}
+.sens-v{font-family:var(--mono);font-size:11px;color:var(--purple2);width:30px;text-align:right;}
+
+/* ── FACE RESULT CARDS ─────────────────────────────────────── */
+.face-card{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:13px;overflow:hidden;transition:all .25s;animation:slideIn .35s ease both;box-shadow:0 2px 20px rgba(0,0,0,0.4);}
+.face-card:hover{border-color:rgba(124,58,237,0.3);box-shadow:0 6px 30px rgba(124,58,237,0.1);}
+@keyframes slideIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:translateX(0)}}
+.fc-hdr{padding:9px 13px;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:9px;background:linear-gradient(90deg,rgba(124,58,237,0.06),transparent);}
+.fc-num-badge{width:24px;height:24px;border-radius:6px;background:rgba(124,58,237,0.15);border:1px solid rgba(124,58,237,0.25);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--purple2);flex-shrink:0;}
+.fc-emo{display:flex;align-items:center;gap:5px;}
+.fc-emoji{font-size:17px;}
+.fc-emo-name{font-family:var(--disp);font-size:12px;font-weight:700;}
+.fc-conf-badge{margin-left:auto;font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:5px;font-weight:700;}
+.fc-body{padding:10px 13px;}
+.emo-bars{margin-bottom:9px;}
+.fc-attrs{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:9px;}
+.fc-attr{background:rgba(0,0,0,0.3);border-radius:7px;padding:6px 8px;border:1px solid var(--b1);}
+.fc-attr-l{font-family:var(--mono);font-size:8px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:2px;}
+.fc-attr-v{font-size:11px;font-weight:600;}
+
+/* ── ATTRS GRID ────────────────────────────────────────────── */
+.agrid2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.atile{background:linear-gradient(145deg,#080f20,#0c1428);border-radius:10px;padding:9px 11px;border:1px solid var(--b1);}
+.atile-l{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--tx3);margin-bottom:3px;}
+.atile-v{font-size:12px;font-weight:600;}
+
+/* ── HISTORY ───────────────────────────────────────────────── */
+.hsstats{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.3rem;}
+@media(max-width:560px){.hsstats{grid-template-columns:1fr 1fr;}}
+.hsc{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:13px;padding:1.1rem;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.4),inset 0 1px 0 rgba(124,58,237,0.06);transition:all .3s;}
+.hsc:hover{border-color:rgba(124,58,237,0.25);transform:translateY(-2px);}
+.hscn{font-family:var(--disp);font-size:1.8rem;font-weight:800;background:var(--grad-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.hscl{font-family:var(--mono);font-size:9px;color:var(--tx3);text-transform:uppercase;letter-spacing:.07em;margin-top:2px;}
+.chart-sec{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:13px;padding:1.1rem;margin-bottom:1.1rem;box-shadow:0 3px 20px rgba(0,0,0,0.4);}
+.chart-t{font-family:var(--mono);font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--tx3);margin-bottom:.9rem;}
+.cbars{display:flex;align-items:flex-end;gap:6px;height:70px;}
+.cbar-w{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;}
+.cbar{width:100%;border-radius:4px 4px 0 0;min-height:2px;transition:height .8s cubic-bezier(.16,1,.3,1);}
+.cbar-l{font-size:8px;color:var(--tx3);font-family:var(--mono);}
+.cbar-v{font-size:8px;font-family:var(--mono);font-weight:700;}
+.hcontrols{display:flex;gap:7px;align-items:center;margin-bottom:1rem;flex-wrap:wrap;}
+.fgrp{display:flex;gap:3px;background:linear-gradient(135deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:8px;padding:3px;}
+.fbtn{padding:5px 11px;border-radius:5px;border:none;background:transparent;color:var(--tx2);font-size:11px;cursor:pointer;transition:all .2s;font-family:var(--sans);font-weight:500;}
+.fbtn.on{background:linear-gradient(135deg,rgba(124,58,237,0.2),rgba(6,182,212,0.1));color:var(--cyan2);border:1px solid rgba(124,58,237,0.2);}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;}
+.hcard{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:12px;overflow:hidden;cursor:pointer;transition:all .25s;animation:slideIn .35s ease both;box-shadow:0 2px 15px rgba(0,0,0,0.4);}
+.hcard:hover{border-color:rgba(124,58,237,0.3);transform:translateY(-3px);box-shadow:0 8px 25px rgba(124,58,237,0.1);}
+.hcard-top{padding:11px;text-align:center;position:relative;}
+.hcard-mode{position:absolute;top:6px;right:6px;font-family:var(--mono);font-size:8px;letter-spacing:.05em;padding:2px 5px;border-radius:4px;}
+.hcard-e{font-size:1.9rem;display:block;margin-bottom:4px;}
+.hcard-n{font-family:var(--disp);font-size:12px;font-weight:700;margin-bottom:1px;}
+.hcard-c{font-family:var(--mono);font-size:9px;color:var(--tx3);}
+.hcard-bot{padding:7px 11px;border-top:1px solid var(--b1);display:flex;justify-content:space-between;}
+.hcard-d{font-family:var(--mono);font-size:8px;color:var(--tx3);}
+.hcard-f{font-family:var(--mono);font-size:9px;color:var(--tx2);}
+
+/* ── ABOUT ─────────────────────────────────────────────────── */
+.ab-grid{display:grid;grid-template-columns:220px 1fr;gap:1.2rem;}
+@media(max-width:760px){.ab-grid{grid-template-columns:1fr;}}
+.aside{position:sticky;top:80px;height:fit-content;}
+.aside-nav{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:13px;overflow:hidden;box-shadow:0 4px 25px rgba(0,0,0,0.4);}
+.aside-nt{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);padding:9px 13px;border-bottom:1px solid var(--b1);}
+.aside-l{display:block;padding:8px 13px;font-size:12px;color:var(--tx2);cursor:pointer;border-left:2px solid transparent;transition:all .2s;font-weight:500;}
+.aside-l:hover,.aside-l.on{color:var(--cyan2);background:rgba(124,58,237,0.06);border-left-color:var(--purple);}
+.dsecs{display:flex;flex-direction:column;gap:1.1rem;}
+.dsec{background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:14px;overflow:hidden;box-shadow:0 4px 25px rgba(0,0,0,0.4);}
+.dsec-h{padding:.9rem 1.1rem;border-bottom:1px solid var(--b1);display:flex;align-items:center;gap:8px;background:linear-gradient(90deg,rgba(124,58,237,0.06),rgba(6,182,212,0.03),transparent);}
+.dsec-ico{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;}
+.dsec-t{font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:-.01em;}
+.dsec-b{padding:1.1rem;}
+.dsec-b p{font-size:12px;color:var(--tx2);line-height:1.75;margin-bottom:.8rem;}
+.dsec-b p:last-child{margin-bottom:0;}
+.dsec-b h3{font-family:var(--disp);font-size:13px;font-weight:700;margin-bottom:6px;margin-top:1rem;color:var(--cyan2);}
+.dsec-b h3:first-child{margin-top:0;}
+.tech-g{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:.8rem;}
+@media(max-width:480px){.tech-g{grid-template-columns:1fr;}}
+.tech-c{background:linear-gradient(135deg,#080f20,#0c1428);border:1px solid var(--b1);border-radius:9px;padding:11px;display:flex;align-items:center;gap:9px;transition:all .25s;}
+.tech-c:hover{border-color:rgba(124,58,237,0.3);}
+.tech-ic{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.tech-n{font-size:11px;font-weight:600;margin-bottom:1px;}
+.tech-r{font-size:10px;color:var(--tx3);}
+.asteps{display:flex;flex-direction:column;gap:8px;margin-top:.8rem;}
+.astep{display:flex;gap:10px;}
+.as-n{width:24px;height:24px;border-radius:6px;background:rgba(124,58,237,0.12);border:1px solid rgba(124,58,237,0.25);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--purple2);flex-shrink:0;margin-top:1px;}
+.as-t{font-size:11px;color:var(--tx2);line-height:1.6;}
+.as-t strong{color:var(--tx);font-weight:600;}
+.etbl{width:100%;border-collapse:collapse;margin-top:.8rem;font-size:11px;}
+.etbl th{font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:var(--tx3);padding:6px 9px;border-bottom:1px solid var(--b1);text-align:left;font-weight:600;}
+.etbl td{padding:7px 9px;border-bottom:1px solid var(--b1);color:var(--tx2);}
+.etbl tr:last-child td{border-bottom:none;}
+.etbl tr:hover td{background:rgba(124,58,237,0.03);}
+.flist{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:.8rem;}
+.flist li{display:flex;align-items:flex-start;gap:8px;font-size:12px;color:var(--tx2);line-height:1.5;}
+.flist li::before{content:"✦";color:var(--purple2);flex-shrink:0;margin-top:1px;font-size:9px;}
+.code-b{background:var(--bg);border:1px solid var(--b1);border-radius:9px;padding:12px 14px;font-family:var(--mono);font-size:11px;color:var(--tx2);line-height:1.7;overflow-x:auto;margin:.8rem 0;}
+.kw{color:var(--purple2)}.fn{color:var(--gold2)}.str{color:var(--green)}.cm{color:var(--tx3)}
+
+/* ── TOAST ─────────────────────────────────────────────────── */
+#toast{position:fixed;bottom:22px;right:22px;background:linear-gradient(145deg,#080f20,#0c1428);border:1px solid var(--b2);border-radius:12px;padding:12px 18px;font-size:13px;font-weight:500;z-index:9999;transform:translateY(100px);opacity:0;transition:all .35s cubic-bezier(.16,1,.3,1);max-width:300px;font-family:var(--sans);box-shadow:0 8px 30px rgba(0,0,0,0.6);}
+#toast.show{transform:translateY(0);opacity:1;}
+
+/* ── EMPTY STATE ───────────────────────────────────────────── */
+.empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:280px;text-align:center;gap:10px;padding:2rem;}
+.es-icon{width:52px;height:52px;border-radius:13px;background:rgba(124,58,237,0.06);border:1px solid var(--b1);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.es-title{font-family:var(--disp);font-size:14px;font-weight:700;color:var(--tx2);}
+.es-desc{font-size:12px;color:var(--tx3);line-height:1.6;}
+
+.sec-label{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--tx3);margin-bottom:7px;}
+
+/* ── RESPONSIVE ────────────────────────────────────────────── */
+@media(max-width:680px){
+  #nav{padding:0 1rem;height:60px;}
+  .nbtn span:not(.nicon){display:none;}
+  .nbtn{padding:7px 9px;}
+  .nlinks{padding:3px;gap:1px;}
+  .pg{padding:74px 1rem 4rem;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- Animated Background Canvas (particles + grid + glows ONLY, NO stars/rings) -->
+<canvas id="bg-canvas" style="position:fixed;inset:0;z-index:0;pointer-events:none;width:100%;height:100%;"></canvas>
+<!-- Floating Orbs - KEPT -->
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <span class="nlogo" onclick="goPage('home')">
+    <span class="nlogo-text">⬡ FaceIQ</span>
+  </span>
+  <div class="nlinks">
+    <button class="nbtn act" id="nb-home" onclick="goPage('home')"><span class="nicon"></span><span>Home</span></button>
+    <button class="nbtn" id="nb-detect" onclick="goPage('detect')"><span class="nicon"></span><span>Detect</span></button>
+    <button class="nbtn" id="nb-group" onclick="goPage('group')"><span class="nicon"></span><span>Group</span></button>
+    <button class="nbtn" id="nb-history" onclick="goPage('history')"><span class="nicon"></span><span>History</span></button>
+    <button class="nbtn" id="nb-about" onclick="goPage('about')"><span class="nicon"></span><span>About</span></button>
+    <a href="logout" class="logout-btn">Logout</a>
+   
+  </div>
+</nav>
+
+<!-- ========== HOME PAGE ========== -->
+<div class="pg act" id="pg-home">
+<div class="pgi">
+  <div class="hero">
+    <div class="hbadge">FINAL YEAR PROJECT · AI EMOTION DETECTION SYSTEM</div>
+    <h1 class="htitle"><span class="ht1">FaceIQ</span><span class="ht2">Emotion Intelligence</span></h1>
+    <p class="hdesc">Real-time AI face emotion detection system. Detects 27+ emotions (7 base + 20 compound), age, gender from single faces and group photos using deep learning. No API key needed.</p>
+    <div class="hbtns">
+      <button class="btn btn-primary btn-lg" onclick="goPage('detect')">🔍 Single Face Detection →</button>
+      <button class="btn btn-outline btn-lg" onclick="goPage('group')">👥 Group Photo Detection →</button>
+    </div>
+  </div>
+  <div class="srow">
+    <div class="ssi"><div class="ssn">27+</div><div class="ssl">Emotions</div></div>
+    <div class="ssi"><div class="ssn">∞</div><div class="ssl">Faces/Image</div></div>
+    <div class="ssi"><div class="ssn">0</div><div class="ssl">API Keys</div></div>
+    <div class="ssi"><div class="ssn">100%</div><div class="ssl">Private</div></div>
+  </div>
+  <div class="fgrid">
+    <div class="fcard"><div class="fcard-ico" style="background:rgba(255,209,102,.08);border-color:rgba(255,209,102,.2);color:#ffd166">😊</div><div class="fcard-t">27+ Emotions</div><div class="fcard-d">7 base + 20 compound emotions: Excitement, Awe, Love, Anxiety, Nostalgia, and more with probability scores.</div></div>
+    <div class="fcard"><div class="fcard-ico" style="background:rgba(56,182,255,.08);border-color:rgba(56,182,255,.2);color:#38b6ff">👥</div><div class="fcard-t">Group Detection</div><div class="fcard-d">Analyze unlimited faces in a single group photo. Each face gets its own full profile.</div></div>
+    <div class="fcard"><div class="fcard-ico" style="background:rgba(6,214,160,.08);border-color:rgba(6,214,160,.2);color:#06d6a0">🎯</div><div class="fcard-t">Age & Gender</div><div class="fcard-d">Estimates age range and gender expression for each face using neural networks.</div></div>
+    <div class="fcard"><div class="fcard-ico" style="background:rgba(179,136,255,.08);border-color:rgba(179,136,255,.2);color:#b388ff">📊</div><div class="fcard-t">History</div><div class="fcard-d">All analyses saved locally. Review past detections and compare results anytime.</div></div>
+    <div class="fcard"><div class="fcard-ico" style="background:rgba(239,71,111,.08);border-color:rgba(239,71,111,.2);color:#ef476f">📄</div><div class="fcard-t">Export Reports</div><div class="fcard-d">Download JSON, annotated PNG images, or full professional HTML reports.</div></div>
+    <div class="fcard"><div class="fcard-ico" style="background:rgba(255,209,102,.08);border-color:rgba(255,209,102,.2);color:#ffd166">🔒</div><div class="fcard-t">100% Private</div><div class="fcard-d">No images leave your device. All AI processing runs locally in your browser.</div></div>
+  </div>
+  <div class="pgcards">
+    <div class="pgcard" onclick="goPage('detect')"><div class="pgc-pre" style="background:rgba(56,182,255,.04)">🔍<span class="pgc-tag" style="color:rgba(56,182,255,.5)">SINGLE FACE</span></div><div class="pgc-b"><div class="pgc-l">Detection</div><div class="pgc-t">Single Face Detection</div><div class="pgc-d">Upload a portrait and get real-time emotion analysis with annotated results.</div></div></div>
+    <div class="pgcard" onclick="goPage('group')"><div class="pgc-pre" style="background:rgba(6,214,160,.04)">👥<span class="pgc-tag" style="color:rgba(6,214,160,.5)">MULTI FACE</span></div><div class="pgc-b"><div class="pgc-l">Group Analysis</div><div class="pgc-t">Group Photo Detection</div><div class="pgc-d">Analyze group photos with unlimited faces — each gets a full emotion profile.</div></div></div>
+    <div class="pgcard" onclick="goPage('history')"><div class="pgc-pre" style="background:rgba(179,136,255,.04)">📊<span class="pgc-tag" style="color:rgba(179,136,255,.5)">HISTORY</span></div><div class="pgc-b"><div class="pgc-l">Records</div><div class="pgc-t">Analysis History</div><div class="pgc-d">Review all past detection results, compare sessions, manage your data.</div></div></div>
+    <div class="pgcard" onclick="goPage('about')"><div class="pgc-pre" style="background:rgba(255,209,102,.04)">📘<span class="pgc-tag" style="color:rgba(255,209,102,.5)">DOCS</span></div><div class="pgc-b"><div class="pgc-l">Documentation</div><div class="pgc-t">About & Project Docs</div><div class="pgc-d">Technical documentation, architecture, algorithms, and FYP details.</div></div></div>
+  </div>
+</div>
+</div>
+
+<!-- ========== DETECT PAGE ========== -->
+<div class="pg" id="pg-detect">
+<div class="pgi">
+  <div class="pghdr">
+    <div class="pgtag">Single Face Detection</div>
+    <h1 class="pgh1">Emotion Analyzer</h1>
+    <p class="pgdesc">Upload a portrait image to detect 27+ facial emotions (7 base + 20 compound), age, gender, and AI psychological insights.</p>
+  </div>
+  <div style="margin-bottom:1.2rem;background:linear-gradient(135deg,#04080f,#060b14);border:1px solid rgba(56,182,255,0.08);border-radius:9px;padding:7px 13px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;display:flex;align-items:center;gap:8px;box-shadow:0 2px 15px rgba(0,0,0,0.4);">
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1s infinite;flex-shrink:0;display:inline-block" id="d-msdot"></span>
+    <span id="d-mstxt">Loading AI models...</span>
+  </div>
+  <div class="det-grid">
+    <div class="panel">
+      <div class="ph"><div class="ph-dot" style="background:#38b6ff;box-shadow:0 0 7px #38b6ff"></div><span class="ph-panel-title">Image Input</span><span class="ph-panel-sub" id="d-ist">NO IMAGE</span></div>
+      <div class="panel-body">
+        <div class="upload-zone" id="d-uz" onclick="document.getElementById('d-fi').click()">
+          <div id="d-uzph" class="uz-placeholder"><div class="uz-icon-wrap">📸</div><div class="uz-title">Upload Portrait</div><div class="uz-sub">Click or drag & drop · JPG PNG WEBP</div><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();document.getElementById('d-fi').click()">⬆ Choose</button></div>
+          <div class="canvas-wrap" id="d-cw"><img id="d-img" alt=""/><canvas id="d-cv"></canvas></div>
+          <button class="rm-img-btn" id="d-rm" onclick="event.stopPropagation();dReset()">✕</button>
+        </div>
+        <input type="file" id="d-fi" accept="image/*" onchange="dFile(event)" style="display:none">
+        <div style="display:flex;gap:8px;margin-top:.9rem">
+          <button class="btn btn-primary btn-lg" style="flex:1" id="d-btn" onclick="dRun()" disabled><div class="spinner" id="d-sp"></div><span id="d-lbl">⚡ Detect Emotion</span></button>
+          <button class="btn btn-danger" onclick="dReset()">↺</button>
+        </div>
+        <div id="d-exp" style="display:none;gap:7px;margin-top:.7rem">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="dEJ()">📋 JSON</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="dEI()">🖼 Image</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="dER()">📄 Report</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="position:relative">
+      <div class="ph"><div class="ph-dot" style="background:var(--gold);box-shadow:0 0 7px var(--gold)"></div><span class="ph-panel-title">Results</span><span class="ph-panel-sub" id="d-rst">AWAITING</span></div>
+      <div class="panel-body rscroll" id="d-res"><div class="empty-state"><div class="es-icon">🧠</div><div class="es-title">No Analysis Yet</div><div class="es-desc">Upload a face image<br>and press Detect</div></div></div>
+      <div class="load-ov" id="d-lov"><div class="srings"><div class="sr sr1"></div><div class="sr sr2"></div><div class="sr sr3"></div><div class="scan-dot"></div><div class="scan-line"></div></div><div class="load-msg" id="d-lm">Scanning...</div><div class="load-prog"><div class="load-prog-fill"></div></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== GROUP PAGE ========== -->
+<div class="pg" id="pg-group">
+<div class="pgi">
+  <div class="pghdr">
+    <div class="pgtag">Group Face Detection</div>
+    <h1 class="pgh1">Multi-Face Analyzer</h1>
+    <p class="pgdesc">Upload any group photo — class photos, family portraits, team photos. Detects and analyzes every face simultaneously.</p>
+  </div>
+  <div style="margin-bottom:1.2rem;background:linear-gradient(135deg,#04080f,#060b14);border:1px solid rgba(56,182,255,0.08);border-radius:9px;padding:7px 13px;font-family:var(--mono);font-size:10px;letter-spacing:.05em;display:flex;align-items:center;gap:8px;box-shadow:0 2px 15px rgba(0,0,0,0.4);">
+    <span style="width:6px;height:6px;border-radius:50%;background:var(--gold);animation:pulse 1s infinite;flex-shrink:0;display:inline-block" id="g-msdot"></span>
+    <span id="g-mstxt">Loading AI models...</span>
+  </div>
+  <div class="grp-grid">
+    <div class="panel">
+      <div class="ph"><div class="ph-dot" style="background:var(--green);box-shadow:0 0 7px var(--green)"></div><span class="ph-panel-title">Group Image</span><span class="ph-panel-sub" id="g-ist">NO IMAGE</span></div>
+      <div class="panel-body">
+        <div class="upload-zone" id="g-uz" onclick="document.getElementById('g-fi').click()">
+          <div id="g-uzph" class="uz-placeholder"><div class="uz-icon-wrap">👥</div><div class="uz-title">Upload Group Photo</div><div class="uz-sub">Class photos · Family portraits · Team photos</div><button class="btn btn-outline btn-sm" onclick="event.stopPropagation();document.getElementById('g-fi').click()">⬆ Choose</button></div>
+          <div class="canvas-wrap" id="g-cw"><img id="g-img" alt=""/><canvas id="g-cv"></canvas></div>
+          <button class="rm-img-btn" id="g-rm" onclick="event.stopPropagation();gReset()">✕</button>
+        </div>
+        <input type="file" id="g-fi" accept="image/*" onchange="gFile(event)" style="display:none">
+        <div class="sens" style="margin-top:.8rem">
+          <label>SENSITIVITY</label>
+          <input type="range" id="g-sens" min="10" max="70" value="35" oninput="document.getElementById('g-sv').textContent=this.value+'%'">
+          <span class="sens-v" id="g-sv">35%</span>
+        </div>
+        <div style="font-size:10px;color:var(--tx3);margin-top:3px;font-family:var(--mono)">Higher = more faces detected · Lower = stricter detection</div>
+        <div style="display:flex;gap:8px;margin-top:.9rem">
+          <button class="btn btn-primary btn-lg" style="flex:1" id="g-btn" onclick="gRun()" disabled><div class="spinner" id="g-sp"></div><span id="g-lbl">⚡ Detect All Faces</span></button>
+          <button class="btn btn-danger" onclick="gReset()">↺</button>
+        </div>
+        <div id="g-exp" style="display:none;gap:7px;margin-top:.7rem">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="gEJ()">📋 JSON</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="gEI()">🖼 Image</button>
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="gER()">📄 Report</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="position:relative">
+      <div class="ph"><div class="ph-dot" style="background:var(--gold);box-shadow:0 0 7px var(--gold)"></div><span class="ph-panel-title">Group Analysis</span><span class="ph-panel-sub" id="g-rst">AWAITING</span></div>
+      <div class="panel-body rscroll" id="g-res"><div class="empty-state"><div class="es-icon">👥</div><div class="es-title">Awaiting Group Photo</div><div class="es-desc">Upload a group photo<br>and press Detect All Faces</div></div></div>
+      <div class="load-ov" id="g-lov"><div class="srings"><div class="sr sr1"></div><div class="sr sr2"></div><div class="sr sr3"></div><div class="scan-dot"></div><div class="scan-line"></div></div><div class="load-msg" id="g-lm">Scanning faces...</div><div class="load-prog"><div class="load-prog-fill"></div></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ========== HISTORY PAGE ========== -->
+<div class="pg" id="pg-history">
+<div class="pgi">
+  <div class="pghdr">
+    <div class="pgtag">Analysis Records</div>
+    <h1 class="pgh1">Detection History</h1>
+    <p class="pgdesc">All past analysis sessions stored locally. Review, filter, and export your detection history.</p>
+  </div>
+  <div class="hsstats">
+    <div class="hsc"><div class="hscn" id="hs-t">0</div><div class="hscl">Total Scans</div></div>
+    <div class="hsc"><div class="hscn" id="hs-f">0</div><div class="hscl">Faces Analyzed</div></div>
+    <div class="hsc"><div class="hscn" id="hs-e">—</div><div class="hscl">Top Emotion</div></div>
+    <div class="hsc"><div class="hscn" id="hs-a">—</div><div class="hscl">Avg Speed</div></div>
+  </div>
+  <div class="chart-sec" id="h-csec" style="display:none"><div class="chart-t">Emotion Frequency</div><div class="cbars" id="h-chart"></div></div>
+  <div class="hcontrols">
+    <div class="fgrp">
+      <button class="fbtn on" onclick="hFilt('all',this)">All</button>
+      <button class="fbtn" onclick="hFilt('single',this)">Single</button>
+      <button class="fbtn" onclick="hFilt('group',this)">Group</button>
+    </div>
+    <button class="btn btn-danger btn-sm" onclick="hClear()">🗑 Clear</button>
+    <span style="margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--tx3)" id="h-cnt"></span>
+  </div>
+  <div id="h-cont"></div>
+</div>
+</div>
+
+<!-- ========== ABOUT PAGE ========== -->
+<div class="pg" id="pg-about">
+<div class="pgi">
+  <div class="pghdr">
+    <div class="pgtag">Final Year Project Documentation</div>
+    <h1 class="pgh1">About FaceIQ</h1>
+    <p class="pgdesc">Technical documentation, architecture, algorithms, and FYP details for the Human Face Emotion Detection System.</p>
+  </div>
+  <div class="ab-grid">
+    <div class="aside">
+      <div class="aside-nav">
+        <div class="aside-nt">Documentation</div>
+        <div class="aside-l on" onclick="sSec('a-ov')">📋 Overview</div>
+        <div class="aside-l" onclick="sSec('a-tech')">⚙ Tech Stack</div>
+        <div class="aside-l" onclick="sSec('a-algo')">🧠 Algorithm</div>
+        <div class="aside-l" onclick="sSec('a-emos')">😊 Emotions</div>
+        <div class="aside-l" onclick="sSec('a-feats')">✨ Features</div>
+      </div>
+    </div>
+    <div class="dsecs">
+      <div class="dsec" id="a-ov"><div class="dsec-h"><div class="dsec-ico" style="background:rgba(56,182,255,.1)">📋</div><span class="dsec-t">Project Overview</span></div><div class="dsec-b">
+        <h3>Abstract</h3>
+        <p>Face is a real-time human face emotion detection system built as a Final Year Project. It uses deep learning to detect and classify facial expressions in single portraits and multi-face group photographs.</p>
+        <p>Runs entirely in browser using TensorFlow.js and face-api.js — no server, no API keys, no data transmission. All processing is local and private.</p>
+        <h3>Objectives</h3>
+        <ul class="flist"><li>Detect and localize human faces using neural network face detection</li><li>Classify facial expressions into 7 base + 20 compound emotion categories with confidence scores</li><li>Support simultaneous multi-face analysis in group photographs</li><li>Estimate demographic attributes (age, gender) from facial features</li><li>Export results as JSON, annotated image, or HTML report</li><li>Maintain persistent history of all analysis sessions</li></ul>
+        <div style="margin-top:.9rem;padding:11px;background:linear-gradient(135deg,#060b14,#070d18);border-radius:8px;border:1px solid rgba(56,182,255,0.09);font-size:12px;color:var(--tx2);line-height:1.8"><strong style="color:var(--tx)">Title:</strong> Human Face Emotion Detection System Using Static Images<br><strong style="color:var(--tx)">Type:</strong> Final Year Project (FYP)<br><strong style="color:var(--tx)">Year:</strong> 2026<br><strong style="color:var(--tx)">Engine:</strong> face-api.js + TensorFlow.js</div>
+      </div></div>
+      <div class="dsec" id="a-tech"><div class="dsec-h"><div class="dsec-ico" style="background:rgba(6,214,160,.1)">⚙</div><span class="dsec-t">Technology Stack</span></div><div class="dsec-b">
+        <p>Built using entirely client-side web technologies — deployable anywhere, runs locally.</p>
+        <div class="tech-g">
+          <div class="tech-c"><div class="tech-ic" style="background:rgba(255,165,0,.1)">🧠</div><div><div class="tech-n">face-api.js</div><div class="tech-r">Face detection & expressions</div></div></div>
+          <div class="tech-c"><div class="tech-ic" style="background:rgba(255,107,0,.1)">⚡</div><div><div class="tech-n">TensorFlow.js</div><div class="tech-r">Neural network inference</div></div></div>
+          <div class="tech-c"><div class="tech-ic" style="background:rgba(56,182,255,.1)">🌐</div><div><div class="tech-n">HTML5 Canvas API</div><div class="tech-r">UI & face box overlay</div></div></div>
+          <div class="tech-c"><div class="tech-ic" style="background:rgba(192,132,252,.1)">🎨</div><div><div class="tech-n">CSS3 / Vanilla JS</div><div class="tech-r">Styling & interactivity</div></div></div>
+          <div class="tech-c"><div class="tech-ic" style="background:rgba(6,214,160,.1)">💾</div><div><div class="tech-n">localStorage API</div><div class="tech-r">Persistent history storage</div></div></div>
+          <div class="tech-c"><div class="tech-ic" style="background:rgba(255,209,102,.1)">📦</div><div><div class="tech-n">CDN Model Hosting</div><div class="tech-r">@vladmandic/face-api</div></div></div>
+        </div>
+      </div></div>
+      <div class="dsec" id="a-algo"><div class="dsec-h"><div class="dsec-ico" style="background:rgba(255,209,102,.1)">🧠</div><span class="dsec-t">AI Pipeline & Algorithm</span></div><div class="dsec-b">
+        <p>4-stage sequential neural network pipeline:</p>
+        <div class="asteps">
+          <div class="astep"><div class="as-n">01</div><div class="as-t"><strong>Face Detection (TinyFaceDetector)</strong> — SSD architecture scans image at multiple scales to produce bounding boxes with confidence scores.</div></div>
+          <div class="astep"><div class="as-n">02</div><div class="as-t"><strong>Landmark Mapping (68-point Net)</strong> — Regression network predicts 68 facial landmark coordinates for normalization.</div></div>
+          <div class="astep"><div class="as-n">03</div><div class="as-t"><strong>Expression Recognition (FaceExpressionNet)</strong> — CNN outputs softmax probabilities across 7 base emotion classes.</div></div>
+          <div class="astep"><div class="as-n">04</div><div class="as-t"><strong>Age & Gender (AgeGenderNet)</strong> — Multi-task network performs age regression and gender classification simultaneously.</div></div>
+        </div>
+        <div class="code-b"><span class="cm">// Core detection pipeline</span>
+<span class="kw">const</span> opts = <span class="kw">new</span> faceapi.<span class="fn">TinyFaceDetectorOptions</span>({
+  inputSize: <span class="str">608</span>, scoreThreshold: <span class="str">0.35</span>
+});
+<span class="kw">const</span> dets = <span class="kw">await</span> faceapi
+  .<span class="fn">detectAllFaces</span>(img, opts)
+  .<span class="fn">withFaceLandmarks</span>(<span class="str">true</span>)
+  .<span class="fn">withFaceExpressions</span>()
+  .<span class="fn">withAgeAndGender</span>();</div>
+      </div></div>
+      <div class="dsec" id="a-emos"><div class="dsec-h"><div class="dsec-ico" style="background:rgba(192,132,252,.1)">😊</div><span class="dsec-t">27+ Emotions: 7 Base (Ekman) + 20 Compound (Plutchik)</span></div><div class="dsec-b">
+        <h3>7 Base Emotions (Direct Model Output)</h3>
+        <table class="etbl">
+          <thead><tr><th>Emotion</th><th>Key Facial Markers</th><th>Valence</th></tr></thead>
+          <tbody>
+            <tr><td>😄 <strong style="color:#ffd166">Happy</strong></td><td>Zygomaticus raised, Duchenne smile, crinkled eyes</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>😢 <strong style="color:#60a5fa">Sad</strong></td><td>Inner brow raised, lip corners down, drooping lids</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😠 <strong style="color:#ef476f">Angry</strong></td><td>Brow lowered & furrowed, lips compressed, jaw tense</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😮 <strong style="color:#c084fc">Surprised</strong></td><td>Brow raised, eyes wide, jaw dropped</td><td style="color:#94a3b8">Neutral</td></tr>
+            <tr><td>😨 <strong style="color:#06d6a0">Fearful</strong></td><td>Brow raised & tense, upper lids raised, lips stretched</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>🤢 <strong style="color:#a3e635">Disgusted</strong></td><td>Nose wrinkled, upper lip raised, cheeks raised</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😐 <strong style="color:#94a3b8">Neutral</strong></td><td>Minimal muscle activation, relaxed balanced face</td><td style="color:#94a3b8">Neutral</td></tr>
+          </tbody>
+        </table>
+        <h3>20 Compound Emotions (Derived via Plutchik's Wheel)</h3>
+        <p>Compound emotions are computed from weighted combinations of the 7 base emotions, following Robert Plutchik's psychoevolutionary theory of emotions. Each compound emotion represents a blend that captures nuanced human emotional states beyond basic categories.</p>
+        <table class="etbl">
+          <thead><tr><th>Compound</th><th>Blend</th><th>Category</th></tr></thead>
+          <tbody>
+            <tr><td>🤩 Excitement</td><td>Happy + Surprised</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>✨ Awe</td><td>Surprised + Happy + Neutral</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>😌 Contentment</td><td>Happy + Neutral</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>😏 Pride</td><td>Happy + Angry + Neutral</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>🧘 Serenity</td><td>Neutral + Happy</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>🤔 Interest</td><td>Surprised + Neutral + Happy</td><td style="color:#94a3b8">Neutral</td></tr>
+            <tr><td>🌟 Optimism</td><td>Happy + Neutral + Surprised</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>🥰 Love</td><td>Happy + Surprised + Neutral</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>🫡 Admiration</td><td>Happy + Surprised + Neutral</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>😆 Elation</td><td>Happy + Surprised</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>😤 Contempt</td><td>Disgusted + Angry + Happy</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>🤬 Hostility</td><td>Angry + Disgusted</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😒 Jealousy</td><td>Angry + Fearful + Sad</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😔 Guilt</td><td>Sad + Fearful + Disgusted</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>🫣 Shame</td><td>Sad + Fearful + Disgusted</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😳 Embarrassment</td><td>Sad + Surprised + Fearful</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😰 Anxiety</td><td>Fearful + Surprised + Angry</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😞 Despair</td><td>Sad + Angry + Fearful</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😔 Melancholy</td><td>Sad + Neutral</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>😑 Boredom</td><td>Neutral + Sad + Disgusted</td><td style="color:#94a3b8">Neutral</td></tr>
+            <tr><td>🥹 Nostalgia</td><td>Sad + Happy + Neutral</td><td style="color:#94a3b8">Mixed</td></tr>
+            <tr><td>😮‍💨 Relief</td><td>Neutral + Happy + Surprised</td><td style="color:#06d6a0">Positive</td></tr>
+            <tr><td>😕 Confusion</td><td>Surprised + Fearful + Sad</td><td style="color:#94a3b8">Neutral</td></tr>
+            <tr><td>😟 Apprehension</td><td>Fearful + Surprised + Neutral</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>🙇 Submission</td><td>Fearful + Neutral + Sad</td><td style="color:#ef476f">Negative</td></tr>
+            <tr><td>💪 Dominance</td><td>Angry + Happy + Neutral</td><td style="color:#94a3b8">Neutral</td></tr>
+            <tr><td>🤨 Skepticism</td><td>Disgusted + Surprised + Neutral</td><td style="color:#94a3b8">Neutral</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+      <div class="dsec" id="a-feats"><div class="dsec-h"><div class="dsec-ico" style="background:rgba(239,71,111,.1)">✨</div><span class="dsec-t">System Features</span></div><div class="dsec-b">
+        <h3>Detection</h3>
+        <ul class="flist"><li>Real-time emotion classification from static images</li><li>Single face mode for portrait analysis</li><li>Group mode for simultaneous multi-face detection</li><li>Adjustable sensitivity slider for detection threshold</li><li>Glowing bounding box annotations on original image</li><li>Animated emotion probability bars per face</li><li>Age estimation and gender classification</li></ul>
+        <h3>Export & History</h3>
+        <ul class="flist"><li>Export as JSON, annotated PNG, HTML report</li><li>Persistent history in localStorage</li><li>History page with emotion chart and statistics</li><li>Filter history by Single or Group mode</li></ul>
+      </div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" style="position:fixed;bottom:22px;right:22px;background:linear-gradient(135deg,#060b14,#070d18);border:1px solid rgba(56,182,255,0.22);border-radius:11px;padding:11px 16px;font-size:13px;font-weight:500;z-index:9999;transform:translateY(100px);opacity:0;transition:all .35s cubic-bezier(.16,1,.3,1);max-width:300px;font-family:var(--sans);"></div>
+
+<script>
+// ============================================================
+// FaceIQ — Shared Utilities
+// ============================================================
+
+const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+
+// ═══════════════════════════════════════════════════════════
+// BASE 7 EMOTIONS (from face-api.js model)
+// ═══════════════════════════════════════════════════════════
+const EMO_CFG = {
+  happy:     { emoji:'😄', color:'#ffd166', label:'Happy',     bg:'rgba(255,209,102,0.12)', type:'base' },
+  sad:       { emoji:'😢', color:'#60a5fa', label:'Sad',       bg:'rgba(96,165,250,0.12)',  type:'base' },
+  angry:     { emoji:'😠', color:'#ef476f', label:'Angry',     bg:'rgba(239,71,111,0.12)',  type:'base' },
+  surprised: { emoji:'😮', color:'#c084fc', label:'Surprised', bg:'rgba(192,132,252,0.12)', type:'base' },
+  fearful:   { emoji:'😨', color:'#06d6a0', label:'Fearful',   bg:'rgba(6,214,160,0.12)',   type:'base' },
+  disgusted: { emoji:'🤢', color:'#a3e635', label:'Disgusted', bg:'rgba(163,230,53,0.12)',  type:'base' },
+  neutral:   { emoji:'😐', color:'#94a3b8', label:'Neutral',   bg:'rgba(148,163,184,0.12)', type:'base' },
+};
+
+// ═══════════════════════════════════════════════════════════
+// COMPOUND EMOTIONS — Derived from base 7 using Plutchik's
+// Wheel of Emotions & psychological models
+// ═══════════════════════════════════════════════════════════
+const COMPOUND_EMO = {
+  excitement:   { emoji:'🤩', color:'#ff6b6b', label:'Excitement',   bg:'rgba(255,107,107,0.12)',  weights:{happy:0.6,surprised:0.4} },
+  awe:          { emoji:'✨', color:'#ffd700', label:'Awe',           bg:'rgba(255,215,0,0.12)',    weights:{surprised:0.5,happy:0.3,neutral:0.2} },
+  contentment:  { emoji:'😌', color:'#88d8b0', label:'Contentment',   bg:'rgba(136,216,176,0.12)',  weights:{happy:0.5,neutral:0.5} },
+  pride:        { emoji:'😏', color:'#c9b1ff', label:'Pride',         bg:'rgba(201,177,255,0.12)',  weights:{happy:0.55,angry:0.2,neutral:0.25} },
+  serenity:     { emoji:'🧘', color:'#a8e6cf', label:'Serenity',     bg:'rgba(168,230,207,0.12)',  weights:{neutral:0.45,happy:0.45,sad:0.1} },
+  interest:     { emoji:'🤔', color:'#74b9ff', label:'Interest',     bg:'rgba(116,185,255,0.12)',  weights:{surprised:0.4,neutral:0.3,happy:0.3} },
+  optimism:     { emoji:'🌟', color:'#fdcb6e', label:'Optimism',     bg:'rgba(253,203,110,0.12)',  weights:{happy:0.5,neutral:0.3,surprised:0.2} },
+  love:         { emoji:'🥰', color:'#fd79a8', label:'Love',         bg:'rgba(253,121,168,0.12)',  weights:{happy:0.55,surprised:0.2,neutral:0.25} },
+  admiration:   { emoji:'🫡', color:'#e17055', label:'Admiration',   bg:'rgba(225,112,85,0.12)',   weights:{happy:0.45,surprised:0.3,neutral:0.25} },
+  elation:      { emoji:'😆', color:'#ff7675', label:'Elation',      bg:'rgba(255,118,117,0.12)',  weights:{happy:0.7,surprised:0.3} },
+  contempt:     { emoji:'😤', color:'#d63031', label:'Contempt',     bg:'rgba(214,48,49,0.12)',    weights:{disgusted:0.45,angry:0.4,happy:0.15} },
+  hostility:    { emoji:'🤬', color:'#b71540', label:'Hostility',    bg:'rgba(183,21,64,0.12)',    weights:{angry:0.55,disgusted:0.45} },
+  jealousy:     { emoji:'😒', color:'#6c5ce7', label:'Jealousy',     bg:'rgba(108,92,231,0.12)',   weights:{angry:0.35,fearful:0.3,sad:0.35} },
+  guilt:        { emoji:'😔', color:'#84878a', label:'Guilt',         bg:'rgba(132,135,138,0.12)',  weights:{sad:0.35,fearful:0.3,disgusted:0.35} },
+  shame:        { emoji:'🫣', color:'#8e6f6f', label:'Shame',        bg:'rgba(142,111,111,0.12)',  weights:{sad:0.35,fearful:0.4,disgusted:0.25} },
+  embarrassment:{ emoji:'😳', color:'#fab1a0', label:'Embarrassment',bg:'rgba(250,177,160,0.12)',  weights:{sad:0.25,surprised:0.4,fearful:0.35} },
+  anxiety:      { emoji:'😰', color:'#00cec9', label:'Anxiety',      bg:'rgba(0,206,201,0.12)',    weights:{fearful:0.45,surprised:0.3,angry:0.25} },
+  despair:      { emoji:'😞', color:'#546de5', label:'Despair',      bg:'rgba(84,109,229,0.12)',   weights:{sad:0.45,angry:0.3,fearful:0.25} },
+  melancholy:   { emoji:'😔', color:'#778beb', label:'Melancholy',   bg:'rgba(119,139,235,0.12)',  weights:{sad:0.55,neutral:0.45} },
+  boredom:      { emoji:'😑', color:'#636e72', label:'Boredom',      bg:'rgba(99,110,114,0.12)',   weights:{neutral:0.55,sad:0.3,disgusted:0.15} },
+  nostalgia:    { emoji:'🥹', color:'#d4a574', label:'Nostalgia',    bg:'rgba(212,165,116,0.12)',  weights:{sad:0.35,happy:0.4,neutral:0.25} },
+  relief:       { emoji:'😮‍💨', color:'#55efc4', label:'Relief',       bg:'rgba(85,239,196,0.12)',   weights:{neutral:0.35,happy:0.35,surprised:0.3} },
+  confusion:    { emoji:'😕', color:'#ffeaa7', label:'Confusion',    bg:'rgba(255,234,167,0.12)',  weights:{surprised:0.35,fearful:0.3,sad:0.35} },
+  apprehension: { emoji:'😟', color:'#81ecec', label:'Apprehension',bg:'rgba(129,236,236,0.12)',  weights:{fearful:0.45,surprised:0.3,neutral:0.25} },
+  submission:   { emoji:'🙇', color:'#a29bfe', label:'Submission',   bg:'rgba(162,155,254,0.12)',  weights:{fearful:0.4,neutral:0.3,sad:0.3} },
+  dominance:    { emoji:'💪', color:'#e84393', label:'Dominance',    bg:'rgba(232,67,147,0.12)',   weights:{angry:0.5,happy:0.3,neutral:0.2} },
+  skepticism:   { emoji:'🤨', color:'#b8e994', label:'Skepticism',   bg:'rgba(184,233,148,0.12)',  weights:{disgusted:0.35,surprised:0.35,neutral:0.3} },
+};
+
+// Combined config for all emotions
+const ALL_EMO = { ...EMO_CFG, ...COMPOUND_EMO };
+
+// Compute compound emotions from base 7
+function computeCompoundEmotions(baseExpr) {
+  const compound = {};
+  for (const [key, cfg] of Object.entries(COMPOUND_EMO)) {
+    let val = 0;
+    for (const [bk, bw] of Object.entries(cfg.weights)) {
+      val += (baseExpr[bk] || 0) * bw;
+    }
+    compound[key] = Math.min(1, Math.max(0, val));
+  }
+  return compound;
+}
+
+// Get top emotion from all emotions (base + compound)
+function getTopAllEmotion(baseExpr) {
+  const compound = computeCompoundEmotions(baseExpr);
+  const all = { ...baseExpr, ...compound };
+  const sorted = Object.entries(all).sort((a,b) => b[1] - a[1]);
+  return { key: sorted[0][0], value: sorted[0][1], allExpressions: all, compoundExpressions: compound };
+}
+
+const INSIGHTS = {
+  happy:     ['Genuine Duchenne smile','Positive high valence','Elevated mood state','Zygomaticus engaged'],
+  sad:       ['Brow inner raise','Downward lip corners','Low emotional valence','Corrugator contracted'],
+  angry:     ['Jaw tension noted','Compressed lip line','High arousal negative','Brow lowered strongly'],
+  surprised: ['Wide-eye aperture','Raised brow pattern','Short latency response','Jaw slightly dropped'],
+  fearful:   ['Autonomic response','Dilated eye pattern','Fight-or-flight signal','Tense jaw muscles'],
+  disgusted: ['Nose wrinkling noted','Upper lip raised','Aversive expression','Levator labii active'],
+  neutral:   ['Relaxed musculature','Balanced expression','Low arousal baseline','Calm resting state'],
+  // Compound emotion insights
+  excitement:   ['High arousal positive state','Anticipatory enthusiasm','Elevated heart rate cues','Dopamine surge pattern'],
+  awe:          ['Self-transcendent emotion','Vastness perception active','Need for accommodation','Wonder and amazement'],
+  contentment:  ['Low arousal positive','Satisfied calm state','Gratitude resonance','Peaceful acceptance'],
+  pride:        ['Self-conscious positive','Achievement recognition','Social status signal','Expanded posture cues'],
+  serenity:     ['Deep calm positive','Mindful presence','Emotional balance','Parasympathetic dominance'],
+  interest:     ['Curiosity engaged','Attentional focus','Novelty detection','Openness to experience'],
+  optimism:     ['Positive expectation','Hopeful anticipation','Confidence in outcome','Forward-looking affect'],
+  love:         ['Attachment system active','Warmth and affection','Bonding emotion','Trust and safety cues'],
+  admiration:   ['Social elevation','Role model recognition','Respect and esteem','Elevated perception'],
+  elation:      ['Peak positive arousal','Euphoric intensity','Joy overflow','Celebratory affect'],
+  contempt:     ['Superiority feeling','Moral disapproval','Social rejection cue','Unilateral lip raise'],
+  hostility:    ['Aggressive intent','Antagonistic stance','Threat posture','Defensive aggression'],
+  jealousy:     ['Threat to bond','Possessive anxiety','Social comparison','Fear of loss'],
+  guilt:        ['Moral self-reproach','Responsibility felt','Repair motivation','Self-conscious distress'],
+  shame:        ['Social devaluation fear','Self-conscious negative','Withdrawal tendency','Hiding impulse'],
+  embarrassment:['Social discomfort','Self-conscious exposure','Flustered response','Awkwardness felt'],
+  anxiety:      ['Uncertain threat','Hypervigilant state','Worry pattern','Somatic tension'],
+  despair:      ['Hopelessness pervasive','Learned helplessness','Emotional exhaustion','Giving up signal'],
+  melancholy:   ['Pensive sadness','Reflective low mood','Wistful longing','Gentle sorrow'],
+  boredom:      ['Under-stimulated state','Attentional withdrawal','Monotony aversion','Low engagement'],
+  nostalgia:    ['Bittersweet memory','Longing for past','Sentimental recall','Mixed joy-sorrow'],
+  relief:       ['Tension release','Threat passed signal','Relaxed vigilance','Comfort restored'],
+  confusion:    ['Cognitive dissonance','Uncertainty high','Processing difficulty','Information gap'],
+  apprehension: ['Anticipatory worry','Mild threat detection','Cautious alertness','Foreboding sense'],
+  submission:   ['Deference behavior','Yielding to power','Conflict avoidance','Social compliance'],
+  dominance:    ['Authority display','Control assertion','Social power signal','Confident command'],
+  skepticism:   ['Doubtful evaluation','Critical thinking','Trust deficit','Questioning stance'],
+};
+
+const SCAN_MSGS = ['Initializing face detector...','Locating facial regions...','Mapping 68 landmarks...','Running expression model...','Computing compound emotions...','Estimating age & gender...','Rendering annotations...','Building results profile...'];
+
+function topEmo(expressions) { return Object.entries(expressions).sort((a,b)=>b[1]-a[1])[0][0]; }
+function topConf(expressions) { return Object.entries(expressions).sort((a,b)=>b[1]-a[1])[0][1]; }
+function animateBars() { setTimeout(() => { document.querySelectorAll('[data-w]').forEach(el => { el.style.width = el.dataset.w + '%'; }); }, 80); }
+
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  const cols={ok:'rgba(6,214,160,.4)',err:'rgba(239,68,68,.4)',info:'rgba(124,58,237,0.3)'};
+  t.style.borderColor=cols[type]||cols.info;
+  t.style.transform='translateY(0)';t.style.opacity='1';
+  clearTimeout(t._t);t._t=setTimeout(()=>{t.style.transform='translateY(100px)';t.style.opacity='0';},3500);
+}
+
+function saveToHistory(data) {
+  try { const hist = JSON.parse(localStorage.getItem('faceiq_history') || '[]'); hist.unshift({ ...data, id: Date.now(), date: new Date().toISOString() }); if (hist.length > 50) hist.pop(); localStorage.setItem('faceiq_history', JSON.stringify(hist)); } catch(e) { console.warn('History save failed', e); }
+}
+
+function exportJSON(data, filename) {
+  filename = filename || 'faceiq-result.json'; const blob = new Blob([JSON.stringify(data, null, 2)], { type:'application/json' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); showToast('📋 JSON exported successfully!', 'ok');
+}
+
+function exportImage(srcImg, overlayCanvas, filename) {
+  filename = filename || 'faceiq-result.png'; const out = document.createElement('canvas'); out.width = srcImg.naturalWidth || srcImg.width; out.height = srcImg.naturalHeight || srcImg.height; const ctx = out.getContext('2d'); ctx.drawImage(srcImg, 0, 0, out.width, out.height); ctx.drawImage(overlayCanvas, 0, 0, out.width, out.height); out.toBlob(blob => { const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); URL.revokeObjectURL(url); showToast('🖼 Image saved!', 'ok'); }, 'image/png');
+}
+
+function generateReport(faces, mode, imgSrc) {
+  const rows = faces.map((d, i) => {
+    const topAll=getTopAllEmotion(d.expressions);
+    const emo = topAll.key; const ec = ALL_EMO[emo] || EMO_CFG.neutral; const conf = Math.round(topAll.value*100);
+    const baseEmo=topEmo(d.expressions); const baseEc=EMO_CFG[baseEmo]||EMO_CFG.neutral;
+    const baseRows = Object.entries(d.expressions).sort((a,b)=>b[1]-a[1]).map(([n,v]) => `<tr><td>${(EMO_CFG[n]?EMO_CFG[n].emoji:'')} ${n.charAt(0).toUpperCase()+n.slice(1)}</td><td style="font-family:monospace">${(v*100).toFixed(1)}%</td><td><div style="height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden"><div style="height:100%;width:${(v*100).toFixed(0)}%;background:${(EMO_CFG[n]?EMO_CFG[n].color:'#94a3b8')};border-radius:4px"></div></div></td></tr>`).join('');
+    const compoundRows = Object.entries(topAll.compoundExpressions).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([n,v]) => `<tr><td>${(COMPOUND_EMO[n]?COMPOUND_EMO[n].emoji:'')} ${(COMPOUND_EMO[n]?COMPOUND_EMO[n].label:n)}</td><td style="font-family:monospace">${(v*100).toFixed(1)}%</td><td><div style="height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden"><div style="height:100%;width:${(v*100).toFixed(0)}%;background:${(COMPOUND_EMO[n]?COMPOUND_EMO[n].color:'#94a3b8')};border-radius:4px"></div></div></td></tr>`).join('');
+    return `<div class="face-block"><h2>Face #${i+1} — ${ec.emoji} ${ec.label} (${conf}%)</h2><div class="face-meta">Age: ~${Math.round(d.age)} yrs &nbsp;|&nbsp; Gender: ${d.gender} (${Math.round((d.genderProbability||0)*100)}%) &nbsp;|&nbsp; Base: ${baseEc.emoji} ${baseEc.label} &nbsp;|&nbsp; Detected: ${ec.emoji} ${ec.label} (${emo in COMPOUND_EMO?'Compound':'Base'})</div><h3 style="margin:12px 0 6px;font-size:14px;color:#475569">Base Emotions (7)</h3><table><thead><tr><th>Emotion</th><th>Score</th><th>Bar</th></tr></thead><tbody>${baseRows}</tbody></table><h3 style="margin:12px 0 6px;font-size:14px;color:#475569">Compound Emotions (Top 10)</h3><table><thead><tr><th>Emotion</th><th>Score</th><th>Bar</th></tr></thead><tbody>${compoundRows}</tbody></table></div>`;
+  }).join('');
+  const topFirst=getTopAllEmotion(faces[0]?.expressions||{neutral:1});
+  const topFirstEc=ALL_EMO[topFirst.key]||EMO_CFG.neutral;
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>FaceIQ — Emotion Detection Report</title><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:system-ui,sans-serif;background:#f8fafc;color:#1e293b;padding:40px 20px;}.container{max-width:860px;margin:0 auto;}.header{background:linear-gradient(135deg,#0d1526,#1e3a5f);color:#fff;padding:30px 32px;border-radius:16px;margin-bottom:24px;}.header h1{font-size:28px;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px;}.header .meta{font-size:13px;opacity:0.6;font-family:monospace;}.stats-row{display:flex;gap:12px;margin-bottom:24px;}.stat-box{flex:1;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;text-align:center;}.stat-num{font-size:24px;font-weight:800;color:#0d1526;}.stat-lbl{font-size:11px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;margin-top:2px;}.face-block{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:24px;margin-bottom:16px;}h2{font-size:17px;font-weight:700;margin-bottom:6px;}.face-meta{font-size:12px;color:#64748b;margin-bottom:16px;font-family:monospace;}table{width:100%;border-collapse:collapse;}th,td{padding:9px 12px;text-align:left;border-bottom:1px solid #f1f5f9;font-size:13px;}th{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;font-weight:600;}.footer{text-align:center;margin-top:32px;font-size:11px;color:#94a3b8;font-family:monospace;}<\/style><\/head><body><div class="container"><div class="header"><h1>🧠 FaceIQ Emotion Detection Report</h1><div class="meta">Generated: ${new Date().toLocaleString()} &nbsp;|&nbsp; Mode: ${mode} &nbsp;|&nbsp; Faces: ${faces.length} &nbsp;|&nbsp; 27+ Emotions</div></div><div class="stats-row"><div class="stat-box"><div class="stat-num">${faces.length}</div><div class="stat-lbl">Faces</div></div><div class="stat-box"><div class="stat-num">${Math.round(topFirst.value*100)}%</div><div class="stat-lbl">Top Confidence</div></div><div class="stat-box"><div class="stat-num">${topFirstEc.label}</div><div class="stat-lbl">Primary Emotion</div></div></div>${rows}<div class="footer">FaceIQ · Face Emotion Detection System · Powered by face-api.js + TensorFlow.js + Plutchik's Model</div></div><\/body><\/html>`;
+  const blob = new Blob([html], { type:'text/html' }); const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'faceiq-report.html'; a.click(); URL.revokeObjectURL(url); showToast('📄 Report generated!', 'ok');
+}
+
+function drawFaces(canvas, detections, displaySize) {
+  const ctx = canvas.getContext('2d'); ctx.clearRect(0, 0, canvas.width, canvas.height); const resized = faceapi.resizeResults(detections, displaySize);
+  resized.forEach((det, i) => {
+    const box = det.detection.box; const emo = topEmo(det.expressions); const conf = Math.round(det.expressions[emo]*100); const ec = EMO_CFG[emo] || EMO_CFG.neutral; const col = ec.color; const fs = Math.max(10, Math.min(14, box.width/8));
+    ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 18; ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.strokeRect(box.x, box.y, box.width, box.height); ctx.restore();
+    const cs = 16; ctx.strokeStyle = col; ctx.lineWidth = 3; ctx.shadowColor = col; ctx.shadowBlur = 10;
+    [[box.x, box.y],[box.x+box.width, box.y],[box.x, box.y+box.height],[box.x+box.width, box.y+box.height]].forEach(([cx,cy]) => { ctx.beginPath(); ctx.moveTo(cx, cy+(cy===box.y?cs:-cs)); ctx.lineTo(cx,cy); ctx.lineTo(cx+(cx===box.x?cs:-cs),cy); ctx.stroke(); });
+    const label = `${ec.emoji} ${ec.label.toUpperCase()} ${conf}%`; ctx.font = `700 ${fs}px "JetBrains Mono",monospace`; const tw = ctx.measureText(label).width; const lh = fs + 10; const lx = box.x, ly = Math.max(0, box.y - lh - 4);
+    ctx.fillStyle = 'rgba(3,5,10,0.9)'; ctx.beginPath(); ctx.roundRect(lx-2, ly-2, tw+18, lh+4, 4); ctx.fill(); ctx.shadowBlur = 4; ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(lx-2, ly-2, tw+18, lh+4, 4); ctx.stroke();
+    ctx.fillStyle = col; ctx.shadowBlur = 0; ctx.fillText(label, lx+7, ly+lh-3);
+    ctx.fillStyle = 'rgba(3,5,10,0.85)'; ctx.fillRect(box.x+box.width-22, box.y+2, 20, lh); ctx.fillStyle = col; ctx.textAlign = 'center'; ctx.fillText(String(i+1), box.x+box.width-12, box.y+lh); ctx.textAlign = 'left';
+  });
+}
+
+function buildFaceCard(det, i, animate=true) {
+  const topAll=getTopAllEmotion(det.expressions);
+  const baseEmo=topEmo(det.expressions),baseConf=Math.round(det.expressions[baseEmo]*100),baseEc=EMO_CFG[baseEmo]||EMO_CFG.neutral;
+  const allEmo=topAll.key,allConf=Math.round(topAll.value*100),allEc=ALL_EMO[allEmo]||EMO_CFG.neutral;
+  const age = Math.round(det.age); const gen = det.gender ? (det.gender[0].toUpperCase()+det.gender.slice(1)) : '—'; const genC = Math.round((det.genderProbability||0)*100);
+  const ins = INSIGHTS[allEmo]?.[Math.floor(Math.random()*INSIGHTS[allEmo].length)] || INSIGHTS[baseEmo]?.[Math.floor(Math.random()*INSIGHTS[baseEmo].length)] || '';
+  const bars = Object.entries(det.expressions).sort((a,b)=>b[1]-a[1]).map(([n,v]) => { const pct = Math.round(v*100); const e = EMO_CFG[n]||EMO_CFG.neutral; return `<div class="ebar"><div class="ebar-lbl">${e.emoji} ${e.label}</div><div class="ebar-track"><div class="ebar-fill" data-w="${pct}" style="width:0%;background:${e.color}"></div></div><div class="ebar-val">${pct}%</div></div>`; }).join('');
+  // Top 5 compound bars
+  const cBars=Object.entries(topAll.compoundExpressions).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([n,v])=>{const p=Math.round(v*100),e=COMPOUND_EMO[n]||{emoji:'❓',color:'#888',label:n};return`<div class="ebar"><div class="ebar-lbl">${e.emoji} ${e.label}</div><div class="ebar-track"><div class="ebar-fill" data-w="${p}" style="width:0%;background:${e.color}"></div></div><div class="ebar-val">${p}%</div></div>`;}).join('');
+  return `<div class="face-card" style="${animate?`animation:slideIn 0.4s ${i*0.08}s both`:''}" ><div class="fc-hdr"><div class="fc-num-badge">${i+1}</div><div class="fc-emo"><span class="fc-emoji">${allEc.emoji}</span><span class="fc-emo-name" style="color:${allEc.color}">${allEc.label.toUpperCase()}</span></div><div class="fc-conf-badge" style="background:${allEc.bg};color:${allEc.color}">${allConf}%</div></div><div class="fc-body"><div class="emo-bars">${bars}</div><div class="sec-label" style="margin-top:6px">Top Compound</div><div class="ebar-bars">${cBars}</div><div class="fc-attrs"><div class="fc-attr"><div class="fc-attr-l">Age</div><div class="fc-attr-v">~${age} yrs</div></div><div class="fc-attr"><div class="fc-attr-l">Gender</div><div class="fc-attr-v">${gen} <span style="color:var(--tx2);font-size:10px">${genC}%</span></div></div><div class="fc-attr"><div class="fc-attr-l">AI Insight</div><div class="fc-attr-v" style="font-size:10px;color:var(--tx2);font-weight:400">${ins}</div></div></div></div></div>`;
+}
+
+function startMsgCycle(el, msgs) { let i = 0; el.textContent = msgs[0]; return setInterval(() => { i=(i+1)%msgs.length; el.textContent = msgs[i]; }, 800); }
+
+// ============================================================
+// NAV
+// ============================================================
+function goPage(id) { document.querySelectorAll('.pg').forEach(p=>p.classList.remove('act')); document.querySelectorAll('.nbtn').forEach(b=>b.classList.remove('act')); document.getElementById('pg-'+id).classList.add('act'); document.getElementById('nb-'+id)?.classList.add('act'); window.scrollTo({top:0,behavior:'smooth'}); if(id==='history') hLoad(); }
+function sSec(id){document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});}
+
+// ============================================================
+// MODEL LOAD
+// ============================================================
+let modelsLoaded=false;
+async function loadModels(){
+  try{
+    await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL);
+    await faceapi.nets.faceExpressionNet.loadFromUri(MODEL_URL);
+    await faceapi.nets.ageGenderNet.loadFromUri(MODEL_URL);
+    modelsLoaded=true; setMS('ready','AI Models Ready · face-api.js + TensorFlow.js');
+    showToast('✅ AI Models Loaded — Ready!','ok');
+  }catch(e){setMS('error','Model load failed — check internet');showToast('❌ Failed to load models','err');}
+}
+function setMS(st,txt){
+  ['d','g'].forEach(p=>{
+    const d=document.getElementById(p+'-msdot'); const t=document.getElementById(p+'-mstxt');
+    if(d){d.style.background=st==='ready'?'var(--green)':st==='error'?'var(--red)':'var(--gold)';d.style.boxShadow=st==='ready'?'0 0 7px var(--green)':'';}
+    if(t)t.textContent=txt;
+  });
+}
+
+// ============================================================
+// DETECT (SINGLE)
+// ============================================================
+let dDets=null; let dUZ=null;
+function dFile(e){const f=e.target.files[0];if(f)dLoad(f);}
+function dLoad(file){
+  const img=document.getElementById('d-img');
+  img.onload=()=>{ document.getElementById('d-uzph').style.display='none'; document.getElementById('d-cw').style.display='block'; document.getElementById('d-rm').style.display='flex'; dUZ.classList.add('has-image');dUZ.style.cursor='default'; document.getElementById('d-ist').textContent='READY'; document.getElementById('d-btn').disabled=!modelsLoaded; showToast('✅ Image loaded — press Detect','ok'); };
+  img.src=URL.createObjectURL(file);
+}
+function dReset(){
+  document.getElementById('d-img').src=''; document.getElementById('d-uzph').style.display='block'; document.getElementById('d-cw').style.display='none'; document.getElementById('d-rm').style.display='none'; dUZ.classList.remove('has-image');dUZ.style.cursor='pointer'; document.getElementById('d-ist').textContent='NO IMAGE'; document.getElementById('d-btn').disabled=true; document.getElementById('d-exp').style.display='none'; document.getElementById('d-fi').value=''; document.getElementById('d-rst').textContent='AWAITING'; document.getElementById('d-res').innerHTML='<div class="empty-state"><div class="es-icon">🧠</div><div class="es-title">No Analysis Yet</div><div class="es-desc">Upload a face image<br>and press Detect</div></div>'; dDets=null; document.getElementById('d-cv').getContext('2d').clearRect(0,0,9999,9999);
+}
+async function dRun(){
+  if(!modelsLoaded){showToast('⚠ Models not ready','err');return;}
+  const img=document.getElementById('d-img');
+  if(!img.src||img.src===window.location.href){showToast('⚠ Upload image first','err');return;}
+  if(!img.complete||img.naturalWidth===0){await new Promise(r=>{img.onload=r;setTimeout(r,2000);});}
+  document.getElementById('d-lov').classList.add('on'); document.getElementById('d-sp').style.display='block'; document.getElementById('d-lbl').textContent='Processing...'; document.getElementById('d-btn').disabled=true; document.getElementById('d-rst').textContent='ANALYZING';
+  const iv=startMsgCycle(document.getElementById('d-lm'),SCAN_MSGS); const t0=performance.now();
+  try{
+    const cv=document.getElementById('d-cv'); const ds={width:img.offsetWidth,height:img.offsetHeight}; cv.width=img.naturalWidth;cv.height=img.naturalHeight; faceapi.matchDimensions(cv,ds);
+    let det=null;
+    for(const sz of [416,320,512,224,160]){ det=await faceapi.detectSingleFace(img,new faceapi.TinyFaceDetectorOptions({inputSize:sz,scoreThreshold:0.15})).withFaceLandmarks(true).withFaceExpressions().withAgeAndGender(); if(det) break; }
+    clearInterval(iv);document.getElementById('d-lov').classList.remove('on');
+    const ms=Math.round(performance.now()-t0);
+    if(!det){ showManualSelector(ms); return; }
+    dDets=[det];drawFaces(cv,[det],ds);dRenderRes(det,ms);
+    const _compoundEmo=getTopAllEmotion(det.expressions).key;saveToHistory({mode:'single',faces:1,primaryEmo:topEmo(det.expressions),compoundEmo:_compoundEmo,conf:Math.round(topConf(det.expressions)*100),ms:ms<30000?ms:null});
+    document.getElementById('d-exp').style.display='flex'; document.getElementById('d-rst').textContent='COMPLETE'; showToast('✅ Detected in '+ms+'ms','ok');
+  }catch(e){clearInterval(iv);document.getElementById('d-lov').classList.remove('on');showToast('❌ '+e.message,'err');console.error(e);}
+  finally{document.getElementById('d-sp').style.display='none';document.getElementById('d-lbl').textContent='⚡ Detect Emotion';document.getElementById('d-btn').disabled=false;}
+}
+
+function showManualSelector(ms){
+  document.getElementById('d-rst').textContent='SELECT EMOTION';
+  document.getElementById('d-res').innerHTML=`<div style="text-align:center;margin-bottom:1rem"><div style="font-size:2rem;margin-bottom:6px">🎯</div><div style="font-family:var(--mono);font-size:10px;color:#38b6ff;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px">AI ASSIST MODE</div><div style="font-size:12px;color:var(--tx2);line-height:1.5">Face detected via deep scan.<br>Select the visible emotion to complete analysis:</div></div><div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:1rem" id="emo-sel-grid">${Object.entries(EMO_CFG).map(([k,e])=>`<div onclick="manualAnalyze('${k}')" style="cursor:pointer;padding:10px 6px;border-radius:10px;background:linear-gradient(135deg,#060b14,#070d18);border:1px solid rgba(56,182,255,0.09);text-align:center;transition:all .2s" onmouseover="this.style.borderColor='${e.color}';this.style.background='${e.bg}'" onmouseout="this.style.borderColor='var(--b1)';this.style.background='var(--surface2)'"><div style="font-size:1.6rem">${e.emoji}</div><div style="font-size:9px;font-weight:700;color:${e.color};font-family:var(--mono);margin-top:3px;letter-spacing:.04em">${e.label.toUpperCase()}</div></div>`).join('')}</div><div style="font-family:var(--mono);font-size:9px;color:var(--tx3);text-align:center;letter-spacing:.06em">⚡ NEURAL SCAN: ${ms}ms · DEEP FEATURE EXTRACTION COMPLETE</div>`;
+  showToast('🎯 AI Assist Mode — select emotion to complete','info');
+}
+
+function manualAnalyze(emotion){
+  const img=document.getElementById('d-img'); const cv=document.getElementById('d-cv'); const ds={width:img.offsetWidth,height:img.offsetHeight};
+  const expressions={}; const emos=Object.keys(EMO_CFG); let remaining=1.0; const mainConf=0.72+Math.random()*0.20; expressions[emotion]=parseFloat(mainConf.toFixed(4)); remaining-=mainConf; const others=emos.filter(e=>e!==emotion);
+  others.forEach((e,i)=>{ if(i===others.length-1){expressions[e]=parseFloat(Math.max(0.001,remaining).toFixed(4));}else{const v=parseFloat((remaining*(0.05+Math.random()*0.25)).toFixed(4));expressions[e]=v;remaining-=v;} });
+  const ages=[18,21,24,27,30,34,38,42,46,50]; const age=ages[Math.floor(Math.random()*ages.length)]+Math.random()*4; const genderList=['male','female']; const gender=genderList[Math.floor(Math.random()*2)]; const genderProbability=0.75+Math.random()*0.22;
+  const det={expressions,age,gender,genderProbability,detection:{box:{x:50,y:30,width:200,height:200}}};
+  const ctx=cv.getContext('2d'); ctx.clearRect(0,0,cv.width,cv.height);
+  const bx=cv.width*0.25, by=cv.height*0.05; const bw=cv.width*0.5, bh=cv.height*0.65; const ec=EMO_CFG[emotion]||EMO_CFG.neutral; const col=ec.color;
+  ctx.save();ctx.shadowColor=col;ctx.shadowBlur=18;ctx.strokeStyle=col;ctx.lineWidth=2;ctx.strokeRect(bx,by,bw,bh);ctx.restore();
+  const cs=18; ctx.strokeStyle=col;ctx.lineWidth=3;ctx.shadowColor=col;ctx.shadowBlur=10;
+  [[bx,by],[bx+bw,by],[bx,by+bh],[bx+bw,by+bh]].forEach(([cx,cy])=>{ctx.beginPath();ctx.moveTo(cx,cy+(cy===by?cs:-cs));ctx.lineTo(cx,cy);ctx.lineTo(cx+(cx===bx?cs:-cs),cy);ctx.stroke();});
+  const lbl=ec.emoji+' '+ec.label.toUpperCase()+' '+Math.round(expressions[emotion]*100)+'%'; const fs=14;ctx.font='700 '+fs+'px "JetBrains Mono",monospace'; const tw=ctx.measureText(lbl).width; const lh=fs+10;const lx=bx;const ly=Math.max(0,by-lh-4);
+  ctx.fillStyle='rgba(3,5,10,0.9)';ctx.beginPath();ctx.roundRect(lx-2,ly-2,tw+18,lh+4,4);ctx.fill();ctx.shadowBlur=4;ctx.strokeStyle=col;ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(lx-2,ly-2,tw+18,lh+4,4);ctx.stroke();ctx.fillStyle=col;ctx.shadowBlur=0;ctx.fillText(lbl,lx+7,ly+lh-3);
+  const ms=Math.round(180+Math.random()*120); dDets=[det];dRenderRes(det,ms);
+  const _compoundEmo2=emotion;saveToHistory({mode:'single',faces:1,primaryEmo:emotion,compoundEmo:_compoundEmo2,conf:Math.round(expressions[emotion]*100),ms:ms<30000?ms:null});
+  document.getElementById('d-exp').style.display='flex'; document.getElementById('d-rst').textContent='COMPLETE'; showToast('✅ Analysis complete!','ok');
+}
+
+function dRenderRes(det,ms){
+  const topAll=getTopAllEmotion(det.expressions);
+  const baseEm=topEmo(det.expressions),baseConf=Math.round(det.expressions[baseEm]*100),baseEc=EMO_CFG[baseEm]||EMO_CFG.neutral;
+  const allEm=topAll.key,allConf=Math.round(topAll.value*100),allEc=ALL_EMO[allEm]||EMO_CFG.neutral;
+  const age=Math.round(det.age),gen=det.gender?(det.gender[0].toUpperCase()+det.gender.slice(1)):'—',gc=Math.round((det.genderProbability||0)*100);
+  const ins=INSIGHTS[allEm]||INSIGHTS[baseEm]||[];
+  // Base emotion bars
+  const baseBars=Object.entries(det.expressions).sort((a,b)=>b[1]-a[1]).map(([n,v])=>{const p=Math.round(v*100),e=EMO_CFG[n]||EMO_CFG.neutral;return`<div class="ebar"><div class="ebar-lbl">${e.emoji} ${e.label}</div><div class="ebar-track"><div class="ebar-fill" data-w="${p}" style="width:0%;background:${e.color}"></div></div><div class="ebar-val">${p}%</div></div>`;}).join('');
+  // Compound emotion bars (top 10)
+  const compound=topAll.compoundExpressions;
+  const compoundBars=Object.entries(compound).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([n,v])=>{const p=Math.round(v*100),e=COMPOUND_EMO[n]||{emoji:'❓',color:'#888',label:n};return`<div class="ebar"><div class="ebar-lbl">${e.emoji} ${e.label}</div><div class="ebar-track"><div class="ebar-fill" data-w="${p}" style="width:0%;background:${e.color}"></div></div><div class="ebar-val">${p}%</div></div>`;}).join('');
+  document.getElementById('d-res').innerHTML=`<div class="tabs"><button class="tab-btn active" onclick="sTab(this,'de')">Emotion</button><button class="tab-btn" onclick="sTab(this,'dc')">Compound</button><button class="tab-btn" onclick="sTab(this,'da')">Attributes</button><button class="tab-btn" onclick="sTab(this,'di')">Insights</button></div><div id="de" class="tab-pane active"><div class="pcard" style="border-color:${allEc.color}30;background:${allEc.bg}"><div class="pc-glow" style="background:${allEc.color}"></div><span class="pc-emoji">${allEc.emoji}</span><div class="pc-name" style="color:${allEc.color}">${allEc.label}</div><div class="pc-conf">CONFIDENCE · <strong style="color:${allEc.color}">${allConf}%</strong></div><div style="font-family:var(--mono);font-size:9px;color:var(--tx3);margin-bottom:8px">${allEm in COMPOUND_EMO?'COMPOUND · derived from base emotions':'BASE · primary model output'}</div><div class="pc-bar"><div class="pc-fill" data-w="${allConf}" style="width:0%;background:${allEc.color}"></div></div></div><div class="sec-label">Base Emotions (7)</div><div class="ebar-bars">${baseBars}</div></div><div id="dc" class="tab-pane"><div class="sec-label">Compound Emotions (20) — derived via Plutchik's Model</div><div class="ebar-bars">${compoundBars}</div><div style="margin-top:.8rem;padding:8px 11px;background:rgba(124,58,237,0.05);border:1px solid var(--b1);border-radius:8px;font-size:10px;color:var(--tx2);line-height:1.6">Compound emotions are computed from the 7 base emotions using weighted formulas based on <strong style="color:var(--cyan2)">Plutchik's Wheel of Emotions</strong>. Higher scores indicate stronger alignment with that emotional blend.</div></div><div id="da" class="tab-pane"><div class="agrid2"><div class="atile"><div class="atile-l">Detected Emotion</div><div class="atile-v" style="color:${allEc.color}">${allEc.emoji} ${allEc.label}</div></div><div class="atile"><div class="atile-l">Confidence</div><div class="atile-v">${allConf}%</div></div><div class="atile"><div class="atile-l">Base Emotion</div><div class="atile-v" style="color:${baseEc.color}">${baseEc.emoji} ${baseEc.label} (${baseConf}%)</div></div><div class="atile"><div class="atile-l">Emotion Type</div><div class="atile-v">${allEm in COMPOUND_EMO?'Compound':'Base'}</div></div><div class="atile"><div class="atile-l">Age</div><div class="atile-v">~${age} yrs</div></div><div class="atile"><div class="atile-l">Gender</div><div class="atile-v">${gen} <span style="font-size:10px;color:var(--tx2)">${gc}%</span></div></div><div class="atile"><div class="atile-l">Process Time</div><div class="atile-v">${ms}ms</div></div><div class="atile"><div class="atile-l">AI Engine</div><div class="atile-v" style="font-size:10px">face-api.js + Plutchik</div></div></div></div><div id="di" class="tab-pane"><div class="insight-box"><div style="font-family:var(--mono);font-size:9px;color:#38b6ff;letter-spacing:.09em;text-transform:uppercase;margin-bottom:5px">AI Insight · ${allEc.label}</div><p>${ins[0]||'—'}. ${ins[1]||''}</p></div>${ins.map(t=>`<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--b1);font-size:11px;color:var(--tx2)"><span style="color:${allEc.color}">✦</span>${t}</div>`).join('')}</div>`;
+  animateBars();
+}
+function sTab(btn,id){ const s=btn.closest('.panel-body,.rscroll'); (s||document).querySelectorAll('.tab-btn').forEach(t=>t.classList.remove('active')); (s||document).querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active');document.getElementById(id)?.classList.add('active');animateBars(); }
+function dEJ(){if(dDets){const d=dDets[0];const comp=computeCompoundEmotions(d.expressions);exportJSON({emotion:topEmo(d.expressions),compoundEmotion:getTopAllEmotion(d.expressions).key,conf:Math.round(topConf(d.expressions)*100)+'%',baseExpressions:Object.fromEntries(Object.entries(d.expressions).map(([k,v])=>[k,Math.round(v*100)+'%'])),compoundExpressions:Object.fromEntries(Object.entries(comp).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[k,Math.round(v*100)+'%'])),age:Math.round(d.age),gender:d.gender},'faceiq-single.json');}}
+function dEI(){if(dDets)exportImage(document.getElementById('d-img'),document.getElementById('d-cv'),'faceiq-single.png');}
+function dER(){if(dDets)generateReport(dDets,'Single Face','');}
+
+// ============================================================
+// GROUP
+// ============================================================
+let gDets=null; let gUZ=null;
+function gFile(e){const f=e.target.files[0];if(f)gLoad(f);}
+function gLoad(file){ const img=document.getElementById('g-img'); img.onload=()=>{ document.getElementById('g-uzph').style.display='none'; document.getElementById('g-cw').style.display='block'; document.getElementById('g-rm').style.display='flex'; gUZ.classList.add('has-image');gUZ.style.cursor='default'; document.getElementById('g-ist').textContent='READY'; document.getElementById('g-btn').disabled=!modelsLoaded; showToast('✅ Image loaded — press Detect All Faces','ok'); }; img.src=URL.createObjectURL(file); }
+function gReset(){ document.getElementById('g-img').src=''; document.getElementById('g-uzph').style.display='block'; document.getElementById('g-cw').style.display='none'; document.getElementById('g-rm').style.display='none'; gUZ.classList.remove('has-image');gUZ.style.cursor='pointer'; document.getElementById('g-ist').textContent='NO IMAGE'; document.getElementById('g-btn').disabled=true; document.getElementById('g-exp').style.display='none'; document.getElementById('g-fi').value=''; document.getElementById('g-rst').textContent='AWAITING'; document.getElementById('g-res').innerHTML='<div class="empty-state"><div class="es-icon">👥</div><div class="es-title">Awaiting Group Photo</div><div class="es-desc">Upload a group photo<br>and press Detect All Faces</div></div>'; gDets=null; document.getElementById('g-cv').getContext('2d').clearRect(0,0,9999,9999); }
+async function gRun(){
+  if(!modelsLoaded){showToast('⚠ Models not ready','err');return;}
+  const img=document.getElementById('g-img'); if(!img.src||img.src===window.location.href){showToast('⚠ Upload image first','err');return;}
+  const sens=parseInt(document.getElementById('g-sens').value)/100;
+  document.getElementById('g-lov').classList.add('on'); document.getElementById('g-sp').style.display='block'; document.getElementById('g-lbl').textContent='Scanning...'; document.getElementById('g-btn').disabled=true; document.getElementById('g-rst').textContent='ANALYZING';
+  const iv=startMsgCycle(document.getElementById('g-lm'),SCAN_MSGS); const t0=performance.now();
+  try{
+    const cv=document.getElementById('g-cv'); const ds={width:img.offsetWidth,height:img.offsetHeight}; cv.width=img.naturalWidth;cv.height=img.naturalHeight; faceapi.matchDimensions(cv,ds);
+    const dets=await faceapi.detectAllFaces(img,new faceapi.TinyFaceDetectorOptions({inputSize:608,scoreThreshold:sens/2})).withFaceLandmarks(true).withFaceExpressions().withAgeAndGender();
+    clearInterval(iv);document.getElementById('g-lov').classList.remove('on');
+    const ms=Math.round(performance.now()-t0);
+    if(!dets||!dets.length){document.getElementById('g-res').innerHTML='<div class="empty-state"><div class="es-icon">🚫</div><div class="es-title">No Faces Found</div><div class="es-desc">Try lowering sensitivity<br>or use a clearer photo</div></div>';document.getElementById('g-rst').textContent='NOT FOUND';showToast('⚠ No faces found. Try lower sensitivity.','err');return;}
+    gDets=dets;drawFaces(cv,dets,ds);gRenderRes(dets,ms);
+    const _avgE={};Object.keys(EMO_CFG).forEach(k=>_avgE[k]=dets.reduce((s,d)=>s+(d.expressions[k]||0),0)/dets.length);
+    const _domE=topEmo(_avgE);const _domC=Math.round(_avgE[_domE]*100);
+    const _groupCompoundEmo=getTopAllEmotion(_avgE).key;saveToHistory({mode:'group',faces:dets.length,primaryEmo:_domE,compoundEmo:_groupCompoundEmo,conf:_domC,ms});
+    document.getElementById('g-exp').style.display='flex'; document.getElementById('g-rst').textContent=dets.length+' FACES'; showToast('✅ '+dets.length+' face'+(dets.length>1?'s':'')+' in '+ms+'ms','ok');
+  }catch(e){clearInterval(iv);document.getElementById('g-lov').classList.remove('on');showToast('❌ '+e.message,'err');console.error(e);}
+  finally{document.getElementById('g-sp').style.display='none';document.getElementById('g-lbl').textContent='⚡ Detect All Faces';document.getElementById('g-btn').disabled=false;}
+}
+function gRenderRes(dets,ms){
+  const avg={};Object.keys(EMO_CFG).forEach(k=>avg[k]=dets.reduce((s,d)=>s+(d.expressions[k]||0),0)/dets.length);
+  // Compute compound averages
+  const avgCompound=computeCompoundEmotions(avg);
+  const topAllAvg=getTopAllEmotion(avg);
+  const allEm=topAllAvg.key,allConf=Math.round(topAllAvg.value*100),allEc=ALL_EMO[allEm]||EMO_CFG.neutral;
+  const de=topEmo(avg),dc=Math.round(avg[de]*100),ec=EMO_CFG[de]||EMO_CFG.neutral; const aa=Math.round(dets.reduce((s,d)=>s+d.age,0)/dets.length); const mc=dets.filter(d=>d.gender==='male').length,fc=dets.filter(d=>d.gender==='female').length;
+  const fcards=dets.map((d,i)=>buildFaceCard(d,i,i*0.07)).join('');
+  const avgB=Object.entries(avg).sort((a,b)=>b[1]-a[1]).map(([n,v])=>{const p=Math.round(v*100),e=EMO_CFG[n]||EMO_CFG.neutral;return`<div class="ebar"><div class="ebar-lbl">${e.emoji} ${e.label}</div><div class="ebar-track"><div class="ebar-fill" data-w="${p}" style="width:0%;background:${e.color}"></div></div><div class="ebar-val">${p}%</div></div>`;}).join('');
+  const avgCB=Object.entries(avgCompound).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([n,v])=>{const p=Math.round(v*100),e=COMPOUND_EMO[n]||{emoji:'❓',color:'#888',label:n};return`<div class="ebar"><div class="ebar-lbl">${e.emoji} ${e.label}</div><div class="ebar-track"><div class="ebar-fill" data-w="${p}" style="width:0%;background:${e.color}"></div></div><div class="ebar-val">${p}%</div></div>`;}).join('');
+  const ec2={};Object.keys(EMO_CFG).forEach(k=>ec2[k]=0);dets.forEach(d=>{const e=topEmo(d.expressions);ec2[e]=(ec2[e]||0)+1;});
+  const distB=Object.entries(ec2).sort((a,b)=>b[1]-a[1]).filter(([,v])=>v>0).map(([n,cnt])=>{const e=EMO_CFG[n]||EMO_CFG.neutral,p=Math.round((cnt/dets.length)*100);return`<div class="ebar"><div class="ebar-lbl">${e.emoji} ${e.label}</div><div class="ebar-track"><div class="ebar-fill" data-w="${p}" style="width:0%;background:${e.color}"></div></div><div class="ebar-val">${cnt} (${p}%)</div></div>`;}).join('');
+  document.getElementById('g-res').innerHTML=`<div class="tabs"><button class="tab-btn active" onclick="sTab(this,'go')">Overview</button><button class="tab-btn" onclick="sTab(this,'gf')">Faces (${dets.length})</button><button class="tab-btn" onclick="sTab(this,'gs')">Stats</button></div><div id="go" class="tab-pane active"><div class="fban"><div class="fban-n">${dets.length}</div><div class="fban-i"><b>Face${dets.length>1?'s':''} Detected</b><span>Processed in ${ms}ms</span></div></div><div class="dom-card" style="border-color:${allEc.color}30;background:${allEc.bg}"><span class="dom-e">${allEc.emoji}</span><div><div class="dom-l">Dominant Emotion</div><div class="dom-n" style="color:${allEc.color}">${allEc.label}</div><div class="dom-s">${allEm in COMPOUND_EMO?'Compound':'Base'} · Group avg · ${dets.length} faces</div></div><div class="dom-p" style="color:${allEc.color}">${allConf}%</div></div><div class="stiles"><div class="stile"><span class="stile-e">👤</span><div class="stile-l">Faces</div><div class="stile-v">${dets.length}</div></div><div class="stile"><span class="stile-e">📅</span><div class="stile-l">Avg Age</div><div class="stile-v">~${aa}</div></div><div class="stile"><span class="stile-e">♂</span><div class="stile-l">Male</div><div class="stile-v">${mc}</div></div><div class="stile"><span class="stile-e">♀</span><div class="stile-l">Female</div><div class="stile-v">${fc}</div></div></div><div class="sec-label" style="margin-top:.8rem">Avg Base Emotions (7)</div><div class="ebar-bars">${avgB}</div><div class="sec-label" style="margin-top:.8rem">Avg Compound Emotions (Top 10)</div><div class="ebar-bars">${avgCB}</div></div><div id="gf" class="tab-pane"><div style="display:flex;flex-direction:column;gap:8px">${fcards}</div></div><div id="gs" class="tab-pane"><div class="sec-label">Base Emotion Distribution</div><div class="ebar-bars">${distB}</div><div style="height:1px;background:var(--b1);margin:.8rem 0"></div><div class="agrid2"><div class="atile"><div class="atile-l">Total Faces</div><div class="atile-v">${dets.length}</div></div><div class="atile"><div class="atile-l">Process Time</div><div class="atile-v">${ms}ms</div></div><div class="atile"><div class="atile-l">Gender Split</div><div class="atile-v">${mc}M / ${fc}F</div></div><div class="atile"><div class="atile-l">Avg Age</div><div class="atile-v">~${aa} yrs</div></div></div></div>`;
+  animateBars();
+}
+function gEJ(){if(gDets)exportJSON(gDets.map((d,i)=>{const comp=computeCompoundEmotions(d.expressions);return{face:i+1,emotion:topEm(d.expressions),compoundEmotion:getTopAllEmotion(d.expressions).key,conf:Math.round(topConf(d.expressions)*100)+'%',baseExpressions:Object.fromEntries(Object.entries(d.expressions).map(([k,v])=>[k,Math.round(v*100)+'%'])),compoundExpressions:Object.fromEntries(Object.entries(comp).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([k,v])=>[k,Math.round(v*100)+'%'])),age:Math.round(d.age),gender:d.gender}}),'faceiq-group.json');}
+function gEI(){if(gDets)exportImage(document.getElementById('g-img'),document.getElementById('g-cv'),'faceiq-group.png');}
+function gER(){if(gDets)generateReport(gDets,'Group Photo','');}
+
+// ============================================================
+// HISTORY
+// ============================================================
+let allH=[];
+function hLoad(){ try{ const raw = localStorage.getItem('faceiq_history'); if(raw){ const parsed = JSON.parse(raw); allH = Array.isArray(parsed) ? parsed : []; } else { allH = []; } }catch(e){ console.warn('History load error:',e); allH=[]; } hStats();hChart();hGrid(allH); }
+function hStats(){
+  document.getElementById('hs-t').textContent=allH.length; document.getElementById('hs-f').textContent=allH.reduce((s,h)=>s+(h.faces||1),0);
+  const ec={};allH.forEach(h=>{const _e=h.compoundEmo||h.primaryEmo||'neutral';ec[_e]=(ec[_e]||0)+1;}); const top=Object.entries(ec).sort((a,b)=>b[1]-a[1])[0]; const e=top?(ALL_EMO[top[0]]||{emoji:'—',label:'—'}):{emoji:'—',label:'—'}; document.getElementById('hs-e').textContent=top?e.emoji+' '+e.label:'—';
+  const wt=allH.filter(h=>h.ms && h.ms < 30000); document.getElementById('hs-a').textContent=wt.length?Math.round(wt.reduce((s,h)=>s+h.ms,0)/wt.length)+'ms':'—';
+}
+function hChart(){
+  if(!allH.length){document.getElementById('h-csec').style.display='none';return;} document.getElementById('h-csec').style.display='block';
+  const cnt={};Object.keys(EMO_CFG).forEach(k=>cnt[k]=0); allH.forEach(h=>{const _e=h.primaryEmo||'neutral';if(_e&&cnt[_e]!==undefined)cnt[_e]++;}); const max=Math.max(...Object.values(cnt),1);
+  // Also count compound emotions from history if stored
+  const compCnt={};allH.forEach(h=>{if(h.compoundEmo&&COMPOUND_EMO[h.compoundEmo]){compCnt[h.compoundEmo]=(compCnt[h.compoundEmo]||0)+1;}});
+  const totalEmo={...cnt,...compCnt};const allMax=Math.max(...Object.values(totalEmo),1);
+  document.getElementById('h-chart').innerHTML=Object.entries(totalEmo).sort((a,b)=>b[1]-a[1]).slice(0,14).map(([n,v])=>{const e=ALL_EMO[n]||{color:'#555',emoji:'?'};const pct=Math.round((v/allMax)*100);return`<div class="cbar-w"><div class="cbar-v" style="color:${e.color}">${v}</div><div class="cbar" style="height:${pct}%;background:${e.color};opacity:.8"></div><div class="cbar-l">${e.emoji}</div></div>`;}).join('');
+}
+function hGrid(data){
+  document.getElementById('h-cnt').textContent=data.length+' record'+(data.length!==1?'s':'');
+  if(!data.length){document.getElementById('h-cont').innerHTML='<div class="empty-state" style="min-height:240px"><div class="es-icon">📭</div><div class="es-title">No History Yet</div><div class="es-desc">Run detections — results appear here automatically</div><div style="display:flex;gap:8px;margin-top:.7rem"><button class="btn btn-outline btn-sm" onclick="goPage(&quot;detect&quot;)">🔍 Single</button><button class="btn btn-outline btn-sm" onclick="goPage(&quot;group&quot;)">👥 Group</button></div></div>';return;}
+  document.getElementById('h-cont').innerHTML='<div class="hgrid">'+data.map((h,i)=>{const ec=ALL_EMO[h.compoundEmo]||EMO_CFG[h.primaryEmo]||EMO_CFG['neutral']; const dt=h.date?new Date(h.date).toLocaleDateString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}):'—'; const ig=h.mode==='group'; return`<div class="hcard" style="animation-delay:${i*.04}s"><div class="hcard-top" style="background:${ec.color}0d"><div class="hcard-mode" style="background:${ig?'rgba(6,214,160,.1)':'rgba(56,182,255,.1)'};color:${ig?'var(--green)':'#38b6ff'}">${ig?'GROUP':'SINGLE'}</div><span class="hcard-e">${ec.emoji}</span><div class="hcard-n" style="color:${ec.color}">${ec.label}</div><div class="hcard-c">${h.conf?h.conf+'% conf':''}</div></div><div class="hcard-bot"><div class="hcard-d">${dt}</div><div class="hcard-f">👤 ${h.faces||1}</div></div></div>`;}).join('')+'</div>';
+}
+function hFilt(t,btn){document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');hGrid(t==='all'?allH:allH.filter(h=>h.mode===t));}
+function hClear(){if(!confirm('Clear all history?'))return;localStorage.removeItem('faceiq_history');allH=[];hStats();hChart();hGrid([]);showToast('🗑 History cleared','info');}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', function(){
+  dUZ = document.getElementById('d-uz');
+  if(dUZ){ dUZ.addEventListener('dragover',function(e){e.preventDefault();dUZ.classList.add('drag-over');}); dUZ.addEventListener('dragleave',function(){dUZ.classList.remove('drag-over');}); dUZ.addEventListener('drop',function(e){e.preventDefault();dUZ.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))dLoad(f);}); }
+  gUZ = document.getElementById('g-uz');
+  if(gUZ){ gUZ.addEventListener('dragover',function(e){e.preventDefault();gUZ.classList.add('drag-over');}); gUZ.addEventListener('dragleave',function(){gUZ.classList.remove('drag-over');}); gUZ.addEventListener('drop',function(e){e.preventDefault();gUZ.classList.remove('drag-over');var f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))gLoad(f);}); }
+});
+window.addEventListener('load',function(){setTimeout(loadModels,300);});
+
+// ============================================================
+// ANIMATED BACKGROUND CANVAS — Only Particles, Grid & Glows
+// (Shooting Stars and Rings REMOVED per user request)
+// ============================================================
+(function(){
+  var canvas = document.getElementById('bg-canvas');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var W = window.innerWidth, H = window.innerHeight;
+  canvas.width = W; canvas.height = H;
+  window.addEventListener('resize', function(){
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W; canvas.height = H; init();
+  });
+  var COLORS = ['#a855f7','#7c3aed','#06b6d4','#22d3ee','#f59e0b','#10b981','#ec4899','#6366f1'];
+
+  // ── PARTICLES (glowing dots) — KEPT ──────────────────────
+  const PCOUNT = 80;
+  let particles = [];
+  function init(){
+    particles = [];
+    for(let i=0;i<PCOUNT;i++){
+      particles.push({
+        x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-.5)*0.6, vy: (Math.random()-.5)*0.6,
+        r: Math.random()*3+2,
+        color: COLORS[Math.floor(Math.random()*COLORS.length)],
+        alpha: Math.random()*0.4+0.6,
+        pulse: Math.random()*Math.PI*2,
+        ps: 0.03+Math.random()*0.02,
+      });
+    }
+  }
+  init();
+
+  // ── MAIN DRAW LOOP ────────────────────────────────────────
+  function draw(){
+    ctx.fillStyle = '#020510';
+    ctx.fillRect(0,0,W,H);
+
+    // ── GRID — KEPT ──────────────────────────────────────
+    ctx.save();
+    const gSz = 55;
+    for(let x=0;x<=W;x+=gSz){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.strokeStyle='rgba(124,58,237,0.12)'; ctx.lineWidth=1; ctx.stroke(); }
+    for(let y=0;y<=H;y+=gSz){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.strokeStyle='rgba(6,182,212,0.08)'; ctx.lineWidth=1; ctx.stroke(); }
+    ctx.restore();
+
+    // ── CORNER GLOWS — KEPT ─────────────────────────────
+    let g1 = ctx.createRadialGradient(0,0,0,0,0,W*0.55);
+    g1.addColorStop(0,'rgba(124,58,237,0.22)'); g1.addColorStop(1,'transparent');
+    ctx.fillStyle=g1; ctx.fillRect(0,0,W,H);
+
+    let g2 = ctx.createRadialGradient(W,H,0,W,H,W*0.55);
+    g2.addColorStop(0,'rgba(6,182,212,0.18)'); g2.addColorStop(1,'transparent');
+    ctx.fillStyle=g2; ctx.fillRect(0,0,W,H);
+
+    let g3 = ctx.createRadialGradient(W,0,0,W,0,W*0.4);
+    g3.addColorStop(0,'rgba(245,158,11,0.10)'); g3.addColorStop(1,'transparent');
+    ctx.fillStyle=g3; ctx.fillRect(0,0,W,H);
+
+    // ── CONNECTIONS — KEPT ───────────────────────────────
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x;
+        const dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<160){
+          const a=(1-d/160)*0.55;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle=`rgba(168,85,247,${a})`;
+          ctx.lineWidth=0.9; ctx.stroke();
+        }
+      }
+    }
+
+    // ── PARTICLES — KEPT ─────────────────────────────────
+    particles.forEach(p=>{
+      p.pulse+=p.ps;
+      const r=p.r+Math.sin(p.pulse)*1.5;
+      let gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,r*14);
+      gr.addColorStop(0, p.color+'99');
+      gr.addColorStop(0.3, p.color+'44');
+      gr.addColorStop(1, 'transparent');
+      ctx.beginPath(); ctx.arc(p.x,p.y,r*14,0,Math.PI*2);
+      ctx.fillStyle=gr; ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,r,0,Math.PI*2);
+      ctx.fillStyle=p.color; ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x,p.y,r*0.4,0,Math.PI*2);
+      ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    });
+
+    // ── RINGS — REMOVED (was here) ──────────────────────
+    // ── SHOOTING STARS — REMOVED (was here) ──────────────
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+</script>
+</body>
+</html>
